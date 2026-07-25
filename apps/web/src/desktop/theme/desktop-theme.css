@@ -1,10 +1,10 @@
 ﻿/* ============================================================
-   VixMotion Desktop â€” DaVinci-Resolve-style charcoal/emerald tokens
+   VixMotion Desktop - charcoal/sky blue tokens
    Scoped under .VixMotion-desktop. Overrides the same CSS variable
    names index.css defines so desktop components reuse the existing
-   Tailwind utilities and inherit the Resolve look.
+   Tailwind utilities.
    Surfaces: charcoal-neutral (hue ~250, low chroma).
-   Accent: emerald (hue ~162).
+   Accent: sky blue (hue ~240).
    ============================================================ */
 .VixMotion-desktop {
   color-scheme: dark;
@@ -23,17 +23,17 @@
   --fg-muted: oklch(0.46 0.006 250);
 
   --hover: oklch(0.27 0.004 250);
-  --selected: oklch(0.3 0.03 162);
+  --selected: oklch(0.3 0.04 240);
 
-  --accent: oklch(0.7 0.15 162);
-  --accent-strong: oklch(0.63 0.16 162);
-  --accent-soft: oklch(0.3 0.05 162);
+  --accent: oklch(0.7 0.14 240);
+  --accent-strong: oklch(0.63 0.15 240);
+  --accent-soft: oklch(0.3 0.05 240);
   --accent-fg: oklch(0.16 0.004 250);
-  --accent-glow: oklch(0.7 0.15 162 / 0.35);
+  --accent-glow: oklch(0.7 0.14 240 / 0.35);
 
   --track-bg: oklch(0.2 0.004 250);
   --tl-bg: oklch(0.15 0.004 250);
-  --waveform: oklch(0.7 0.15 162 / 0.55);
+  --waveform: oklch(0.7 0.14 240 / 0.55);
   --stage-bg: oklch(0.12 0.003 250);
   --screen-bg: oklch(0 0 0);
 
@@ -52,7 +52,7 @@
   --card-foreground: 0 0% 93%;
   --popover: 220 7% 14%;
   --popover-foreground: 0 0% 93%;
-  --primary: 158 64% 52%;
+  --primary: 200 90% 48%;
   --primary-foreground: 220 8% 10%;
   --secondary: 220 6% 19%;
   --secondary-foreground: 0 0% 93%;
@@ -63,5 +63,5 @@
   --destructive: 0 62% 50%;
   --destructive-foreground: 0 0% 95%;
   --input: 220 6% 25%;
-  --ring: 158 64% 52%;
+  --ring: 200 90% 48%;
 }

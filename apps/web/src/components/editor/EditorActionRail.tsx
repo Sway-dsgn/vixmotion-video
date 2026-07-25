@@ -152,6 +152,33 @@ export const EditorActionRail: React.FC = () => {
 
       <div className="flex-1" />
 
+      <Tooltip
+        content={
+          themeMode === "light"
+            ? "Switch to dark mode"
+            : themeMode === "dark"
+              ? "Switch to system theme"
+              : "Switch to light mode"
+        }
+        placement="end"
+      >
+        <IconButton
+          label="Toggle theme"
+          icon={
+            themeMode === "light" ? (
+              <Moon size={16} aria-hidden />
+            ) : themeMode === "dark" ? (
+              <SunMoon size={16} aria-hidden />
+            ) : (
+              <Sun size={16} aria-hidden />
+            )
+          }
+          size="sm"
+          variant="ghost"
+          onClick={toggleTheme}
+        />
+      </Tooltip>
+
       <DropdownMenu
         placement="end"
         button={{
@@ -164,18 +191,6 @@ export const EditorActionRail: React.FC = () => {
         hasChevron={false}
         menuWidth={224}
         items={[
-          {
-            label: `Theme: ${themeMode}`,
-            icon:
-              themeMode === "light" ? (
-                <Sun size={14} aria-hidden />
-              ) : themeMode === "dark" ? (
-                <Moon size={14} aria-hidden />
-              ) : (
-                <SunMoon size={14} aria-hidden />
-              ),
-            onClick: toggleTheme,
-          },
           {
             label: "Settings & API keys",
             icon: <Settings size={14} aria-hidden />,

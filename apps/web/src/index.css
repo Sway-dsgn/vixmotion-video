@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================================
-   VixMotion Editor â€” v2 design tokens (cinematic dark, emerald)
+   VixMotion Editor - v2 design tokens (cinematic dark, sky blue)
    All values are CSS variables. Components use Tailwind utilities
    that map to these via tailwind.config.js.
    ============================================================ */
@@ -33,7 +33,7 @@
     color-scheme: dark;
   }
 
-  /* light theme â€” Claude Design "Editor" mock (emerald brand accent, Inter) */
+  /* light theme - VixMotion (sky blue brand accent, Inter) */
   :root,
   [data-theme="light"] {
     --bg: #f4f4f6;            /* window / app background */
@@ -48,7 +48,7 @@
     --fg-3: #7c7c82;          /* tertiary / labels */
     --fg-muted: #9a9a9f;      /* muted / placeholder */
     --hover: #f0f0f3;
-    --selected: #e6f9f1;      /* emerald-soft selected state */
+    --selected: #e0f2fe;      /* sky-soft selected state */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
     --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.16);
@@ -60,12 +60,12 @@
     --stage-bg: #ffffff;
     --screen-bg: #ffffff;
 
-    /* accent (brand emerald #10b981 â€” matches the VixMotion logo) */
-    --accent: #10b981;
-    --accent-strong: #059669;
-    --accent-soft: #e6f9f1;
+    /* accent (brand sky blue #0ea5e9 - VixMotion) */
+    --accent: #0ea5e9;
+    --accent-strong: #0284c7;
+    --accent-soft: #e0f2fe;
     --accent-fg: #ffffff;
-    --accent-glow: rgba(16, 185, 129, 0.35);
+    --accent-glow: rgba(14, 165, 233, 0.35);
 
     /* clip palette */
     --c-video: #6a9bd8;
@@ -74,7 +74,7 @@
     --c-music: #14b8a6;
   }
 
-  /* dark theme â€” cinematic, near-black like reference */
+  /* dark theme - VixMotion, cinematic near-black */
   [data-theme="dark"],
   .dark {
     --bg: oklch(0.12 0.005 240);
@@ -89,23 +89,23 @@
     --fg-3: oklch(0.6 0.012 240);
     --fg-muted: oklch(0.48 0.012 240);
     --hover: oklch(0.22 0.009 240);
-    --selected: oklch(0.30 0.03 162);
+    --selected: oklch(0.30 0.04 240);
     --shadow-sm: 0 1px 0 oklch(0 0 0 / 0.4), 0 1px 2px oklch(0 0 0 / 0.3);
     --shadow-md: 0 1px 0 oklch(0 0 0 / 0.5), 0 6px 24px oklch(0 0 0 / 0.4);
     --shadow-lg: 0 1px 0 oklch(0 0 0 / 0.6), 0 24px 60px oklch(0 0 0 / 0.5);
     --track-bg: oklch(0.12 0.006 240);
     --tl-bg: oklch(0.1 0.005 240);
-    --waveform: oklch(0.78 0.16 162 / 0.85);
+    --waveform: oklch(0.78 0.16 200 / 0.85);
     --stage-bg: oklch(0.08 0.004 240);
     /* the preview "screen" itself (canvas + letterbox): black in dark */
     --screen-bg: oklch(0 0 0);
 
-    /* accent (brand emerald â€” matches the VixMotion logo) */
-    --accent: oklch(0.7 0.15 162);
-    --accent-strong: oklch(0.63 0.16 162);
-    --accent-soft: oklch(0.7 0.15 162 / 0.2);
+    /* accent (brand sky blue - VixMotion) */
+    --accent: oklch(0.7 0.14 240);
+    --accent-strong: oklch(0.63 0.15 240);
+    --accent-soft: oklch(0.7 0.14 240 / 0.2);
     --accent-fg: oklch(0.99 0 0);
-    --accent-glow: oklch(0.7 0.15 162 / 0.45);
+    --accent-glow: oklch(0.7 0.14 240 / 0.45);
   }
 
   [data-density="compact"] {
