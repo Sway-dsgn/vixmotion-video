@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "jsx": "react-jsx",
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@vixmotion/ui": ["./src/index.ts"],
+      "@vixmotion/ui/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

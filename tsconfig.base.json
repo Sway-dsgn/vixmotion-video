@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@vixmotion/core": ["./packages/core/src/index.ts"],
+      "@vixmotion/core/*": ["./packages/core/src/*"],
+      "@vixmotion/agent": ["./packages/agent/src/index.ts"],
+      "@vixmotion/agent/*": ["./packages/agent/src/*"],
+      "@vixmotion/creation-bindings": ["./packages/creation-bindings/src/index.ts"],
+      "@vixmotion/creation-bindings/*": ["./packages/creation-bindings/src/*"],
+      "@vixmotion/creation-agent": ["./packages/creation-agent/src/index.ts"],
+      "@vixmotion/creation-agent/*": ["./packages/creation-agent/src/*"],
+      "@vixmotion/creation-schema": ["./packages/creation-schema/src/index.ts"],
+      "@vixmotion/creation-schema/*": ["./packages/creation-schema/src/*"],
+      "@vixmotion/image-core": ["./packages/image-core/src/index.ts"],
+      "@vixmotion/image-core/*": ["./packages/image-core/src/*"],
+      "@vixmotion/ui": ["./packages/ui/src/index.ts"],
+      "@vixmotion/ui/*": ["./packages/ui/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "build"]
+}

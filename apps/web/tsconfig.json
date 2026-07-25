@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@vixmotion/core": ["../../packages/core/src/index.ts"],
+      "@vixmotion/core/*": ["../../packages/core/src/*"],
+      "@vixmotion/agent": ["../../packages/agent/src/index.ts"],
+      "@vixmotion/agent/*": ["../../packages/agent/src/*"],
+      "@vixmotion/ui": ["../../packages/ui/src/index.ts"],
+      "@vixmotion/ui/*": ["../../packages/ui/src/*"]
+    }
+  },
+  "include": ["src"]
+}

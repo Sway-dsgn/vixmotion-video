@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "baseUrl": ".",
+    "types": ["vite/client", "node"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@vixmotion/core": ["../../packages/core/src/index.ts"],
+      "@vixmotion/core/*": ["../../packages/core/src/*"],
+      "@vixmotion/fxpkg": ["../../packages/fxpkg/src/index.ts"],
+      "@vixmotion/fxpkg/*": ["../../packages/fxpkg/src/*"],
+      "@vixmotion/ui": ["../../packages/ui/src/index.ts"],
+      "@vixmotion/ui/*": ["../../packages/ui/src/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "types": ["node"],
+    "paths": {
+      "@vixmotion/core": ["../core/src/index.ts"],
+      "@vixmotion/core/*": ["../core/src/*"],
+      "@vixmotion/agent": ["../agent/src/index.ts"],
+      "@vixmotion/agent/*": ["../agent/src/*"]
+    }
+  },
+  "include": ["src"]
+}

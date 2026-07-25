@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@vixmotion/core": ["./src/index.ts"],
+      "@vixmotion/core/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["src/wasm/**/assembly"]
+}

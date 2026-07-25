@@ -1,0 +1,32 @@
+﻿import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+
+export default defineConfig({
+  plugins: [react()],
+  assetsInclude: ["**/*.wasm"],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "@vixmotion/core": path.resolve(__dirname, "../../packages/core/src"),
+      "@vixmotion/fxpkg": path.resolve(__dirname, "../../packages/fxpkg/src"),
+      "@vixmotion/ui": path.resolve(__dirname, "../../packages/ui/src"),
+    },
+  },
+  worker: {
+    format: "es",
+  },
+  optimizeDeps: {
+    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util", "@ffmpeg/core", "@ffmpeg/core-mt"],
+  },
+  server: {
+    port: 5174,
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
+  },
+  build: {
+    target: "esnext",
+  },
+});

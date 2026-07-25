@@ -1,0 +1,19 @@
+{
+  "name": "VixMotion Image",
+  "short_name": "VixMotion",
+  "description": "Professional browser-based graphic design editor",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0ea5e9",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["graphics", "design", "productivity"]
+}
