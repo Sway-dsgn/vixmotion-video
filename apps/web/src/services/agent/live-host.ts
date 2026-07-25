@@ -244,7 +244,7 @@ export class LiveEditorHost implements EditingHost {
     options?: { name?: string },
   ): Promise<ImportedMediaRef> {
     this.requireOpenProject();
-    const bridge = window.VixMotion?.media?.fetchUrl;
+    const bridge = window.vixmotion?.media?.fetchUrl;
     if (typeof bridge !== "function") {
       throw new Error("Media download is only available in the desktop app");
     }
@@ -294,7 +294,7 @@ export class LiveEditorHost implements EditingHost {
       (descriptor.transparent || descriptor.extension === "mov");
     const nativeAvailable =
       typeof window !== "undefined" &&
-      window.VixMotion?.platform === "desktop";
+      window.vixmotion?.platform === "desktop";
     const willNormalize = requiresNative && !nativeAvailable;
     if (willNormalize && options.acknowledgeH264Fallback !== true) {
       throw new Error(
@@ -435,7 +435,7 @@ export class LiveEditorHost implements EditingHost {
   };
 
   async probeRiggingBackend(): Promise<RiggingBackendProbe> {
-    const probeBackend = window.VixMotion?.rigging?.probeBackend;
+    const probeBackend = window.vixmotion?.rigging?.probeBackend;
     if (typeof probeBackend !== "function") {
       return {
         available: false,
@@ -454,7 +454,7 @@ export class LiveEditorHost implements EditingHost {
   }
 
   async rigHumanoidModel(options: HumanoidRigRequest): Promise<HumanoidRigResult> {
-    const rigHumanoidModel = window.VixMotion?.rigging?.rigHumanoidModel;
+    const rigHumanoidModel = window.vixmotion?.rigging?.rigHumanoidModel;
     if (typeof rigHumanoidModel !== "function") {
       return {
         ok: false,

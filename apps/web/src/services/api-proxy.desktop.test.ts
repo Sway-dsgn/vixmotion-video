@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe("apiFetch desktop branch", () => {
-  it("routes through window.VixMotion.cloud.fetch and ignores the passed key", async () => {
+  it("routes through window.vixmotion.cloud.fetch and ignores the passed key", async () => {
     const res = await apiFetch("openai", "/chat/completions", "IGNORED", {
       method: "POST",
       body: "{}",

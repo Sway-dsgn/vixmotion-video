@@ -50,8 +50,8 @@ export async function apiFetch(
 ): Promise<Response> {
   const extraHeaders = (options.headers ?? {}) as Record<string, string>;
 
-  if (typeof window !== "undefined" && window.VixMotion?.platform === "desktop") {
-    const result = await window.VixMotion.cloud.fetch(service, path, {
+  if (typeof window !== "undefined" && window.vixmotion?.platform === "desktop") {
+    const result = await window.vixmotion.cloud.fetch(service, path, {
       method: options.method,
       headers: options.headers as Record<string, string> | undefined,
       body: typeof options.body === "string" ? options.body : undefined,

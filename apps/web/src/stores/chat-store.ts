@@ -72,7 +72,7 @@ const genId = (): string =>
     ?.randomUUID?.() ?? `m-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 const isDesktop = (): boolean =>
-  typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+  typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 
 // Monotonic turn id: a completion whose seq is stale (reset/superseded) must not
 // write back into the store.

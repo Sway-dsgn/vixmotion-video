@@ -9,7 +9,7 @@ import { toast } from "../../../stores/notification-store";
 import type { VixMotionMcpStatus } from "../../../types/global";
 
 const isDesktop = (): boolean =>
-  typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+  typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 
 function clientConfigSnippet(shimPath: string): string {
   return JSON.stringify(
@@ -45,7 +45,7 @@ export const McpPanel: React.FC = () => {
   const [testing, setTesting] = useState(false);
 
   const refresh = useCallback(async () => {
-    const bridge = window.VixMotion?.mcp;
+    const bridge = window.vixmotion?.mcp;
     if (!bridge) return;
     try {
       const nextStatus = await bridge.getStatus();
@@ -67,7 +67,7 @@ export const McpPanel: React.FC = () => {
   }, [refresh]);
 
   const handleRotate = useCallback(async () => {
-    const bridge = window.VixMotion?.mcp;
+    const bridge = window.vixmotion?.mcp;
     if (!bridge) return;
     try {
       setStatus(await bridge.rotateToken());
@@ -78,7 +78,7 @@ export const McpPanel: React.FC = () => {
   }, []);
 
   const handleTest = useCallback(async () => {
-    const bridge = window.VixMotion?.mcp;
+    const bridge = window.vixmotion?.mcp;
     if (!bridge) return;
     setTesting(true);
     try {

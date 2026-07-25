@@ -35,7 +35,7 @@ type NativeFileRef = { kind: "native"; path: string };
 type ProjectFileRef = FileSystemFileHandle | NativeFileRef;
 
 function isDesktopFs(): boolean {
-  return typeof window !== "undefined" && !!window.VixMotion?.fs;
+  return typeof window !== "undefined" && !!window.vixmotion?.fs;
 }
 
 function isNativeRef(ref: unknown): ref is NativeFileRef {
@@ -317,12 +317,12 @@ class ProjectManager {
 
   async saveProjectAs(project: Project): Promise<boolean> {
     if (isDesktopFs()) {
-      const filePath = await window.VixMotion!.fs.showSaveDialog({
+      const filePath = await window.vixmotion!.fs.showSaveDialog({
         defaultPath: `${project.name}.oreel`,
         filters: [{ name: "VixMotion Project", extensions: ["oreel", "json"] }],
       });
       if (!filePath) return false;
-      await window.VixMotion!.fs.writeFile(
+      await window.vixmotion!.fs.writeFile(
         filePath,
         JSON.stringify(project, null, 2),
       );
@@ -372,7 +372,7 @@ class ProjectManager {
   ): Promise<boolean> {
     try {
       if (isNativeRef(handle)) {
-        await window.VixMotion!.fs.writeFile(
+        await window.vixmotion!.fs.writeFile(
           handle.path,
           JSON.stringify(project, null, 2),
         );
@@ -417,11 +417,11 @@ class ProjectManager {
 
   async openProject(): Promise<Project | null> {
     if (isDesktopFs()) {
-      const filePath = await window.VixMotion!.fs.showOpenDialog({
+      const filePath = await window.vixmotion!.fs.showOpenDialog({
         filters: [{ name: "VixMotion Project", extensions: ["oreel", "json"] }],
       });
       if (!filePath) return null;
-      const content = await window.VixMotion!.fs.readFile(filePath);
+      const content = await window.vixmotion!.fs.readFile(filePath);
       let project: Project;
       try {
         project = this.parseProjectContent(content);
@@ -504,7 +504,7 @@ class ProjectManager {
     if (recentProject.fileHandle) {
       if (isNativeRef(recentProject.fileHandle)) {
         try {
-          const content = await window.VixMotion!.fs.readFile(
+          const content = await window.vixmotion!.fs.readFile(
             recentProject.fileHandle.path,
           );
           const project = this.parseProjectContent(content);

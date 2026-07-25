@@ -435,7 +435,7 @@ export async function getDeviceProfile(
     return cachedProfile;
   }
 
-  // Desktop: build the profile from real hardware specs (window.VixMotion.probeHardware)
+  // Desktop: build the profile from real hardware specs (window.vixmotion.probeHardware)
   // instead of the browser heuristics (navigator/WebGL/WebCodecs).
   const bridge = (globalThis as unknown as {
     VixMotion?: { platform?: string; probeHardware?: () => Promise<NativeHardwareInfo> };

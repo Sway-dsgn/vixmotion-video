@@ -39,7 +39,7 @@ export function DesktopApp(): JSX.Element {
   // directly; new/open/export are broadcast as events for the relevant UI to
   // pick up (e.g. the export button opens its dialog on "export").
   useEffect(() => {
-    const bridge = window.VixMotion;
+    const bridge = window.vixmotion;
     if (!bridge?.onMenuAction) return;
     return bridge.onMenuAction((id) => {
       switch (id) {
@@ -77,7 +77,7 @@ export function DesktopApp(): JSX.Element {
   // Answer the native unsaved-changes guard on window close / quit: report
   // dirty state and flush pending changes on request.
   useEffect(() => {
-    const lifecycle = window.VixMotion?.lifecycle;
+    const lifecycle = window.vixmotion?.lifecycle;
     if (!lifecycle) return;
     const offQuery = lifecycle.onQueryUnsaved(() =>
       autoSaveManager.hasUnsavedChanges(useProjectStore.getState().getFullProject()),

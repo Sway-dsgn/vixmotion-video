@@ -133,7 +133,7 @@ export class NativeFFmpegBackend implements EncoderBackend {
     settings: VideoExportSettings,
     project: Project,
   ): Promise<void> {
-    const bridge = window.VixMotion;
+    const bridge = window.vixmotion;
     if (!bridge) {
       throw new Error("NativeFFmpegBackend requires the desktop bridge");
     }
@@ -235,7 +235,7 @@ export class NativeFFmpegBackend implements EncoderBackend {
 
   async addAudioBuffer(buffer: AudioBuffer): Promise<void> {
     await this.ensureAudioHeader(buffer);
-    const bridge = window.VixMotion;
+    const bridge = window.vixmotion;
     if (!bridge || !this.jobId) {
       throw new Error("NativeFFmpegBackend not started");
     }
@@ -250,7 +250,7 @@ export class NativeFFmpegBackend implements EncoderBackend {
     if (!this.jobId) {
       throw new Error("NativeFFmpegBackend not started");
     }
-    const bridge = window.VixMotion;
+    const bridge = window.vixmotion;
     if (!bridge) {
       throw new Error("NativeFFmpegBackend requires the desktop bridge");
     }
@@ -323,8 +323,8 @@ export class NativeFFmpegBackend implements EncoderBackend {
   }
 
   async abort(): Promise<void> {
-    if (this.jobId && window.VixMotion) {
-      await window.VixMotion.export.cancel(this.jobId);
+    if (this.jobId && window.vixmotion) {
+      await window.vixmotion.export.cancel(this.jobId);
     }
     this.releaseReadbackBuffers();
   }
@@ -374,7 +374,7 @@ export class NativeFFmpegBackend implements EncoderBackend {
     }
     if (this.audioHeaderWritten) return;
 
-    const bridge = window.VixMotion;
+    const bridge = window.vixmotion;
     if (!bridge || !this.jobId) {
       throw new Error("NativeFFmpegBackend not started");
     }
@@ -388,7 +388,7 @@ export class NativeFFmpegBackend implements EncoderBackend {
   }
 
   private async writeSilentAudio(): Promise<void> {
-    const bridge = window.VixMotion;
+    const bridge = window.vixmotion;
     if (!bridge || !this.jobId) {
       throw new Error("NativeFFmpegBackend not started");
     }

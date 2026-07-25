@@ -285,7 +285,7 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 }
 
 function hasNativeMotionExportBackend(): boolean {
-  return typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+  return typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 }
 
 function motionExportFormatRequiresNative(
@@ -352,7 +352,7 @@ interface NativeAuroraExportCandidate {
 
 function getDesktopAuroraSequenceBridge() {
   const bridge =
-    window.VixMotion?.platform === "desktop" ? window.VixMotion.aurora : undefined;
+    window.vixmotion?.platform === "desktop" ? window.vixmotion.aurora : undefined;
   if (
     !bridge?.startSequenceSession ||
     !bridge.cancelSequenceSession ||
@@ -451,7 +451,7 @@ async function prepareNativeAuroraOutputPath(
   filename: string,
   extension: MotionExportFormatDescriptor["extension"],
 ): Promise<void> {
-  const showSaveDialog = window.VixMotion?.fs?.showSaveDialog;
+  const showSaveDialog = window.vixmotion?.fs?.showSaveDialog;
   if (typeof showSaveDialog !== "function") {
     throw new Error("Native Aurora export is only available in the desktop app.");
   }

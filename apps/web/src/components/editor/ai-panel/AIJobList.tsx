@@ -42,8 +42,8 @@ export function AIJobList(): JSX.Element | null {
               onClick={() => {
                 // Best-effort server cancel; the job may already be gone (404)
                 // â€” never let that surface as an uncaught rejection.
-                const cancel = window.VixMotion?.gpu
-                  ? window.VixMotion.gpu.cancelJob(job.jobID)
+                const cancel = window.vixmotion?.gpu
+                  ? window.vixmotion.gpu.cancelJob(job.jobID)
                   : getWebGpuClient().cancelJob(job.jobID);
                 void cancel.catch(() => undefined);
                 useGpuJobStore.getState().removeJob(job.jobID);

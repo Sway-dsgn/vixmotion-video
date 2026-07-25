@@ -71,7 +71,7 @@ export function clearWebMotionAssetBitmapCache(): void {
 async function resolveModelUrl(url: string): Promise<string | null> {
   if (!isRemoteHttpUrl(url)) return url;
   const bridge = typeof window !== "undefined"
-    ? window.VixMotion?.media?.fetchUrl
+    ? window.vixmotion?.media?.fetchUrl
     : undefined;
   if (typeof bridge !== "function") return url;
 

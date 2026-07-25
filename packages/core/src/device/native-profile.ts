@@ -12,7 +12,7 @@
   type GpuInfo,
 } from "./device-capabilities";
 
-// Mirror of VixMotionHardwareInfo (window.VixMotion.probeHardware result). packages/core does not
+// Mirror of VixMotionHardwareInfo (window.vixmotion.probeHardware result). packages/core does not
 // see apps/web's ambient type, so the shape is declared locally.
 export interface NativeHardwareInfo {
   cpu: { model: string; physicalCores: number; logicalCores: number };

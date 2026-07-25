@@ -40,9 +40,9 @@ export interface NativeAuroraStagePreviewArgs {
 export function startNativeAuroraStagePreviewSession(
   args: NativeAuroraStagePreviewArgs,
 ): (() => void) | null {
-  const aurora = window.VixMotion?.aurora;
+  const aurora = window.vixmotion?.aurora;
   if (
-    window.VixMotion?.platform !== "desktop" ||
+    window.vixmotion?.platform !== "desktop" ||
     !aurora?.startPreviewSession ||
     !aurora.cancelPreviewSession ||
     !aurora.onPreviewEvent

@@ -255,8 +255,8 @@ export async function createDownloadWritable(
 ): Promise<FileSystemWritableFileStream> {
   const ext = filename.split(".").pop() || "mp4";
 
-  if (typeof window.VixMotion?.fs?.showSaveDialog === "function") {
-    const chosen = await window.VixMotion.fs.showSaveDialog({
+  if (typeof window.vixmotion?.fs?.showSaveDialog === "function") {
+    const chosen = await window.vixmotion.fs.showSaveDialog({
       defaultPath: filename,
       filters: [{ name: "Media file", extensions: [ext] }],
     });
@@ -264,7 +264,7 @@ export async function createDownloadWritable(
       throw new DOMException("User cancelled", "AbortError");
     }
     (window as { __VixMotionExportPath?: string }).__VixMotionExportPath = chosen;
-    const handleId = await window.VixMotion.fs.openWrite(chosen);
+    const handleId = await window.vixmotion.fs.openWrite(chosen);
     let cursor = 0;
     return {
       async seek(position: number) {
@@ -285,14 +285,14 @@ export async function createDownloadWritable(
         } else {
           return;
         }
-        await window.VixMotion!.fs.writeChunk(handleId, bytes, cursor);
+        await window.vixmotion!.fs.writeChunk(handleId, bytes, cursor);
         cursor += bytes.byteLength;
       },
       async close() {
-        await window.VixMotion!.fs.closeWrite(handleId);
+        await window.vixmotion!.fs.closeWrite(handleId);
       },
       async abort() {
-        await window.VixMotion!.fs.abortWrite(handleId);
+        await window.vixmotion!.fs.abortWrite(handleId);
       },
       async truncate() {},
     } as unknown as FileSystemWritableFileStream;
@@ -449,8 +449,8 @@ export function useExportRunner(options: ExportRunnerOptions): UseExportRunner {
     ): Promise<FileSystemWritableFileStream> => {
       const mime = mimeForExt(ext);
 
-      if (typeof window.VixMotion?.fs?.showSaveDialog === "function") {
-        const chosen = await window.VixMotion.fs.showSaveDialog({
+      if (typeof window.vixmotion?.fs?.showSaveDialog === "function") {
+        const chosen = await window.vixmotion.fs.showSaveDialog({
           defaultPath: filename,
           filters: [{ name: "Media file", extensions: [ext] }],
         });
@@ -463,7 +463,7 @@ export function useExportRunner(options: ExportRunnerOptions): UseExportRunner {
         // disk through the fs bridge. The native ffmpeg video path writes the
         // file itself via __VixMotionExportPath, so it gets the no-op stub below.
         if (ext === "wav" || opts?.streamToFile === true) {
-          const handleId = await window.VixMotion.fs.openWrite(chosen);
+          const handleId = await window.vixmotion.fs.openWrite(chosen);
           let cursor = 0;
           return {
             async seek(position: number) {
@@ -480,14 +480,14 @@ export function useExportRunner(options: ExportRunnerOptions): UseExportRunner {
               } else {
                 return;
               }
-              await window.VixMotion!.fs.writeChunk(handleId, bytes, cursor);
+              await window.vixmotion!.fs.writeChunk(handleId, bytes, cursor);
               cursor += bytes.byteLength;
             },
             async close() {
-              await window.VixMotion!.fs.closeWrite(handleId);
+              await window.vixmotion!.fs.closeWrite(handleId);
             },
             async abort() {
-              await window.VixMotion!.fs.abortWrite(handleId);
+              await window.vixmotion!.fs.abortWrite(handleId);
             },
             async truncate() {},
           } as unknown as FileSystemWritableFileStream;

@@ -18,7 +18,7 @@ export function gpuBackoffMs(attempt: number, baseMs: number = POLL_BASE_MS): nu
 }
 
 export function isDesktopGpuAvailable(): boolean {
-  return typeof window !== "undefined" && window.VixMotion?.platform === "desktop" && !!window.VixMotion.gpu;
+  return typeof window !== "undefined" && window.vixmotion?.platform === "desktop" && !!window.vixmotion.gpu;
 }
 
 export function isWebGpuAvailable(): boolean {
@@ -53,7 +53,7 @@ export async function submitClipJob(args: SubmitClipJobArgs): Promise<{ jobID: s
 }
 
 async function submitClipJobDesktop(args: SubmitClipJobArgs): Promise<{ jobID: string }> {
-  const gpu = window.VixMotion!.gpu;
+  const gpu = window.vixmotion!.gpu;
   let mediaKey: string | undefined;
   let mediaFilename: string | undefined;
   if (args.srcPath && args.filename) {

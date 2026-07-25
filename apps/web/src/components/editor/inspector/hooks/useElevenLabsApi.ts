@@ -28,7 +28,7 @@ interface UseElevenLabsApiReturn {
 export function useElevenLabsApi(options: UseElevenLabsApiOptions): UseElevenLabsApiReturn {
   const { provider, hasElevenLabsKey, settingsOpen, elevenLabsModel, defaultLlmProvider } = options;
 
-  const isDesktop = typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+  const isDesktop = typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 
   const {
     cachedElevenLabsVoices,

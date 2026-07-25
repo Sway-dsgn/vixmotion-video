@@ -24,7 +24,7 @@ type Phase =
 const CONFIGURE_PROVIDER = "Configure an AI provider in settings";
 
 function isDesktop(): boolean {
-  return typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+  return typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 }
 
 function resolveModel(): { provider: "openai" | "anthropic"; model: string } {

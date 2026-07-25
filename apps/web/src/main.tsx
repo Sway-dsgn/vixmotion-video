@@ -18,7 +18,7 @@ const DesktopApp = React.lazy(() =>
 );
 
 const isDesktop =
-  typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+  typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 
 if (isDesktop) {
   setEncoderBackendFactory(

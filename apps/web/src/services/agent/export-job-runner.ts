@@ -148,7 +148,7 @@ async function uploadExport(
   ext: string,
   contentType: string,
 ): Promise<JobResult> {
-  const bridge = window.VixMotion?.gpu?.uploadExport;
+  const bridge = window.vixmotion?.gpu?.uploadExport;
   if (typeof bridge !== "function") {
     return { ok: false, error: "Export upload is only available in the desktop app" };
   }

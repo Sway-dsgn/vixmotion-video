@@ -1,5 +1,5 @@
-﻿// Renderer-side bridge to the desktop native FFmpeg sidecar (window.VixMotion.media).
-// packages/core cannot see apps/web's ambient window.VixMotion type, so we declare the
+﻿// Renderer-side bridge to the desktop native FFmpeg sidecar (window.vixmotion.media).
+// packages/core cannot see apps/web's ambient window.vixmotion type, so we declare the
 // minimal slice this module uses and access it via a typed cast on globalThis.
 
 export interface NativeMediaBridge {

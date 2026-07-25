@@ -29,7 +29,7 @@ const project: any = {
 };
 
 describe("ProjectManager desktop fs", () => {
-  it("saveProjectAs writes via window.VixMotion.fs and round-trips", async () => {
+  it("saveProjectAs writes via window.vixmotion.fs and round-trips", async () => {
     const ok = await projectManager.saveProjectAs(project);
     expect(ok).toBe(true);
     expect((window as any).VixMotion.fs.writeFile).toHaveBeenCalled();

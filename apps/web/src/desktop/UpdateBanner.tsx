@@ -5,7 +5,7 @@ import { ToolcraftText as Text } from "@vixmotion/ui";
 import type { VixMotionUpdaterStatus } from "../types/global";
 
 // Notify â†’ (consented) download â†’ install. Subscribes to main-process update
-// status and drives download/install through window.VixMotion.updater. The
+// status and drives download/install through window.vixmotion.updater. The
 // install path quits through the normal guarded flow, so unsaved changes are
 // still protected.
 export function UpdateBanner(): JSX.Element | null {
@@ -13,7 +13,7 @@ export function UpdateBanner(): JSX.Element | null {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    const updater = window.VixMotion?.updater;
+    const updater = window.vixmotion?.updater;
     if (!updater) return;
     return updater.onStatus((next) => {
       setStatus(next);
@@ -48,7 +48,7 @@ export function UpdateBanner(): JSX.Element | null {
               label="Download"
               variant="primary"
               size="sm"
-              onClick={() => void window.VixMotion?.updater.download()}
+              onClick={() => void window.vixmotion?.updater.download()}
             />
             <Button
               label="Later"
@@ -91,7 +91,7 @@ export function UpdateBanner(): JSX.Element | null {
               label="Restart & Install"
               variant="primary"
               size="sm"
-              onClick={() => void window.VixMotion?.updater.install()}
+              onClick={() => void window.vixmotion?.updater.install()}
             />
             <Button
               label="Later"

@@ -213,7 +213,7 @@ export async function handleMcpBridgeRequest(
 
 /** Installs the desktop MCP bridge listener. No-op off desktop. */
 export function installMcpListener(): () => void {
-  const mcp = window.VixMotion?.mcp;
+  const mcp = window.vixmotion?.mcp;
   if (!mcp) return () => {};
   return mcp.onRequest(handleMcpBridgeRequest);
 }

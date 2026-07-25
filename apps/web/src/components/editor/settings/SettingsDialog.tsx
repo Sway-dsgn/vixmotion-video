@@ -9,7 +9,7 @@ import { ApiKeysPanel } from "./ApiKeysPanel";
 import { McpPanel } from "./McpPanel";
 
 const isDesktop =
-  typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+  typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 
 const TABS: readonly { id: SettingsTab; label: string; icon: typeof Settings }[] = [
   { id: "general", label: "General", icon: Settings },

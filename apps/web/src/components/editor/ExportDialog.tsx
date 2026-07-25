@@ -322,7 +322,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
         : exportPresetsManager.getRecommendedPresets();
 
   const isDesktop =
-    typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+    typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
   const isNativeExportAvailable = isDesktop;
 
   const guardrailActive =

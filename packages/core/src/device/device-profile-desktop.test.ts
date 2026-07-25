@@ -6,7 +6,7 @@ afterEach(() => {
 });
 
 describe("getDeviceProfile desktop branch", () => {
-  it("builds the profile from window.VixMotion.probeHardware when on desktop", async () => {
+  it("builds the profile from window.vixmotion.probeHardware when on desktop", async () => {
     const probeHardware = vi.fn(async () => ({
       cpu: { model: "Apple M3 Max", physicalCores: 14, logicalCores: 14 },
       memory: { totalBytes: 36 * 1024 ** 3, freeBytes: 20 * 1024 ** 3 },

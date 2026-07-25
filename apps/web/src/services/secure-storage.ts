@@ -41,7 +41,7 @@ interface DesktopKeychain {
 
 function desktopKeychain(): DesktopKeychain | undefined {
   if (typeof window === "undefined") return undefined;
-  const bridge = window.VixMotion;
+  const bridge = window.vixmotion;
   return bridge?.platform === "desktop" ? bridge.keychain : undefined;
 }
 

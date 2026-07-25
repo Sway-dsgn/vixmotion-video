@@ -25,11 +25,11 @@ export function useGpuJobPoller(): void {
     const desktop = isDesktopGpuAvailable();
     const io = desktop
       ? {
-          jobStatus: (id: string): Promise<{ status: string }> => window.VixMotion!.gpu.jobStatus(id),
-          fetchManifest: (id: string): Promise<Record<string, unknown>> => window.VixMotion!.gpu.fetchManifest(id),
+          jobStatus: (id: string): Promise<{ status: string }> => window.vixmotion!.gpu.jobStatus(id),
+          fetchManifest: (id: string): Promise<Record<string, unknown>> => window.vixmotion!.gpu.fetchManifest(id),
           download: async (id: string, rel: string): Promise<{ bytes: ArrayBuffer; mime: string }> => {
-            const { tempPath, mime } = await window.VixMotion!.gpu.downloadArtifact(id, rel);
-            const bytes = await window.VixMotion!.fs.readFileBytes(tempPath);
+            const { tempPath, mime } = await window.vixmotion!.gpu.downloadArtifact(id, rel);
+            const bytes = await window.vixmotion!.fs.readFileBytes(tempPath);
             return { bytes, mime };
           },
         }

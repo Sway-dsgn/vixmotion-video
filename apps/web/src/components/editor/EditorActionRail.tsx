@@ -69,7 +69,7 @@ export const EditorActionRail: React.FC = () => {
   }, [createMotionComposition, navigate]);
 
   const isDesktop =
-    typeof window !== "undefined" && window.VixMotion?.platform === "desktop";
+    typeof window !== "undefined" && window.vixmotion?.platform === "desktop";
 
   return (
     <nav
