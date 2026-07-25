@@ -100,3 +100,6 @@ Openreel Video Android/
 # Root logo assets (copied to public/ dirs instead)
 vixmotion ada teks.png
 vixmotion no teks.png
+
+.vercel
+.env*
