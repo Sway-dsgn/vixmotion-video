@@ -1,5 +1,4 @@
 {
-  "nodeVersion": "22.x",
   "framework": "vite",
   "buildCommand": "pnpm build",
   "outputDirectory": "apps/web/dist",
