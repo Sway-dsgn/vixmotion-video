@@ -4,6 +4,7 @@ import { ToolcraftText as Text } from "@vixmotion/ui";
 import { Preview } from "./Preview";
 import { RightPanel } from "./RightPanel";
 import { LeftPanel } from "./LeftPanel";
+import { LeftIconRail } from "./LeftIconRail";
 import { TopNavbar } from "./TopNavbar";
 import { Timeline } from "./Timeline";
 import { BottomToolbar } from "./BottomToolbar";
@@ -38,9 +39,7 @@ import {
   disposeTransitionBridge,
 } from "../../bridges/transition-bridge";
 
-const ChatPanel = React.lazy(() =>
-  import("./chat/ChatPanel").then((module) => ({ default: module.ChatPanel })),
-);
+
 
 // Timeline area (bottom band) is sized as a vh fraction so the
 // top workspace (media | stage | inspector) gets the rest. The grid
@@ -60,14 +59,9 @@ const DEFAULT_INSPECTOR_W = 320;
 const MIN_INSPECTOR_W = 260;
 const MAX_INSPECTOR_W = 400;
 
-const DEFAULT_CHAT_W = 320;
-const MIN_CHAT_W = 260;
-const MAX_CHAT_W = 400;
-
 const MIN_STAGE_W = 380;
-const RESIZE_HANDLE = 4;
 
-type ResizeTarget = "timeline" | "media" | "inspector" | "chat";
+type ResizeTarget = "timeline" | "media" | "inspector";
 
 const clamp = (value: number, min: number, max: number): number => {
   return Math.min(Math.max(value, min), max);
@@ -321,23 +315,16 @@ export const EditorInterface: React.FC = () => {
   const resizeRef = useRef<ResizeTarget | null>(null);
   const [mediaWidth, setMediaWidth] = useState(DEFAULT_MEDIA_W);
   const [inspectorWidth, setInspectorWidth] = useState(DEFAULT_INSPECTOR_W);
-  const [chatWidth, setChatWidth] = useState(DEFAULT_CHAT_W);
   const [timelineVh, setTimelineVh] = useState(DEFAULT_TIMELINE_VH);
-
-  const chatVisible = panels.agentChat?.visible ?? false;
 
   const mediaRef = useRef(mediaWidth);
   const inspectorRef = useRef(inspectorWidth);
-  const chatRef = useRef(chatWidth);
   useEffect(() => {
     mediaRef.current = mediaWidth;
   }, [mediaWidth]);
   useEffect(() => {
     inspectorRef.current = inspectorWidth;
   }, [inspectorWidth]);
-  useEffect(() => {
-    chatRef.current = chatWidth;
-  }, [chatWidth]);
 
   const beginResize = useCallback(
     (target: ResizeTarget) => (e: React.MouseEvent) => {
@@ -356,13 +343,10 @@ export const EditorInterface: React.FC = () => {
       const target = resizeRef.current;
       if (!root || !target) return;
       const rect = root.getBoundingClientRect();
-      const chatOpen =
-        useUIStore.getState().panels.agentChat?.visible ?? false;
-      const chatOffset = chatOpen ? chatRef.current + RESIZE_HANDLE : 0;
 
       if (target === "media") {
         const maxByStage =
-          rect.width - inspectorRef.current - chatOffset - MIN_STAGE_W;
+          rect.width - inspectorRef.current - MIN_STAGE_W;
         setMediaWidth(
           clamp(e.clientX - rect.left, MIN_MEDIA_W, Math.min(MAX_MEDIA_W, maxByStage)),
         );
@@ -370,28 +354,12 @@ export const EditorInterface: React.FC = () => {
       }
       if (target === "inspector") {
         const maxByStage =
-          rect.width - mediaRef.current - chatOffset - MIN_STAGE_W;
+          rect.width - mediaRef.current - MIN_STAGE_W;
         setInspectorWidth(
           clamp(
-            rect.right - chatOffset - e.clientX,
+            rect.right - e.clientX,
             MIN_INSPECTOR_W,
             Math.min(MAX_INSPECTOR_W, maxByStage),
-          ),
-        );
-        return;
-      }
-      if (target === "chat") {
-        const maxByStage =
-          rect.width -
-          mediaRef.current -
-          inspectorRef.current -
-          2 * RESIZE_HANDLE -
-          MIN_STAGE_W;
-        setChatWidth(
-          clamp(
-            rect.right - e.clientX,
-            MIN_CHAT_W,
-            Math.min(MAX_CHAT_W, maxByStage),
           ),
         );
         return;
@@ -423,9 +391,8 @@ export const EditorInterface: React.FC = () => {
     const tlVh = timelineMaximized ? COMPACT_TIMELINE_VH : timelineVh;
     r.style.setProperty("--media-w", `${mediaWidth}px`);
     r.style.setProperty("--inspector-w", `${inspectorWidth}px`);
-    r.style.setProperty("--chat-w", `${chatWidth}px`);
     r.style.setProperty("--tl-height", `${tlVh}vh`);
-  }, [mediaWidth, inspectorWidth, chatWidth, timelineVh, timelineMaximized]);
+  }, [mediaWidth, inspectorWidth, timelineVh, timelineMaximized]);
 
   if (initializing || !initialized) {
     return (
@@ -449,108 +416,37 @@ export const EditorInterface: React.FC = () => {
   const effectiveTimelineVh = timelineMaximized
     ? COMPACT_TIMELINE_VH
     : timelineVh;
-  const gridStyle: React.CSSProperties = chatVisible
-    ? {
-        gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px minmax(${MIN_STAGE_W}px, 1fr) ${RESIZE_HANDLE}px ${inspectorWidth}px ${RESIZE_HANDLE}px ${chatWidth}px`,
-        gridTemplateRows: `1fr auto 6px ${effectiveTimelineVh}vh`,
-        gridTemplateAreas:
-          "'media mh stage ih inspector ch chat' 'th th th th th th th' 'tlr tlr tlr tlr tlr tlr tlr' 'timeline timeline timeline timeline timeline timeline timeline'",
-      }
-    : {
-        gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px minmax(${MIN_STAGE_W}px, 1fr) ${RESIZE_HANDLE}px ${inspectorWidth}px`,
-        gridTemplateRows: `1fr auto 6px ${effectiveTimelineVh}vh`,
-        gridTemplateAreas:
-          "'media mh stage ih inspector' 'th th th th th' 'tlr tlr tlr tlr tlr' 'timeline timeline timeline timeline timeline'",
-      };
+
+  const [activeTab, setActiveTab] = useState("assets");
 
   return (
     <div
       ref={rootRef}
-      className="w-full h-full bg-bg text-fg overflow-hidden font-sans select-none relative z-20 flex flex-col"
+      className="w-full h-full bg-[#0d0d0d] text-fg overflow-hidden font-sans select-none relative z-20 flex flex-col"
     >
       <TopNavbar />
 
-      <div className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 grid gap-0 bg-bg p-2.5 overflow-hidden" style={gridStyle}>
-          {/* Left Panel - Inspector */}
-          <div
-            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm h-full"
-            style={{ gridArea: "media" }}
-          >
-            <PanelErrorBoundary name="Inspector">
-              <LeftPanel />
-            </PanelErrorBoundary>
-          </div>
+      {/* Main content area */}
+      <div className="flex-1 min-h-0 flex">
+        {/* Left Icon Rail */}
+        <LeftIconRail activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <div
-            className="grid place-items-center cursor-col-resize group/h"
-            style={{ gridArea: "mh" }}
-            onMouseDown={beginResize("media")}
-          >
-            <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
-          </div>
+        {/* Left Panel - File Browser */}
+        <div className="h-full overflow-hidden shrink-0">
+          <LeftPanel />
+        </div>
 
-          {/* Center Stage - Preview */}
-          <div
-            className="bg-stage-bg min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm h-full"
-            style={{ gridArea: "stage" }}
-          >
+        {/* Center: Preview + Timeline */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Preview */}
+          <div className="flex-1 min-h-0 overflow-hidden">
             <PanelErrorBoundary name="Stage">
               <Preview />
             </PanelErrorBoundary>
           </div>
 
-          <div
-            className="grid place-items-center cursor-col-resize group/h"
-            style={{ gridArea: "ih" }}
-            onMouseDown={beginResize("inspector")}
-          >
-            <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
-          </div>
-
-          {/* Right Panel - Assets */}
-          <div
-            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm h-full"
-            style={{ gridArea: "inspector" }}
-          >
-            <PanelErrorBoundary name="Assets">
-              <RightPanel />
-            </PanelErrorBoundary>
-          </div>
-
-          {chatVisible && (
-            <>
-              <div
-                className="grid place-items-center cursor-col-resize group/h"
-                style={{ gridArea: "ch" }}
-                onMouseDown={beginResize("chat")}
-              >
-                <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
-              </div>
-
-              <div
-                className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
-                style={{ gridArea: "chat" }}
-              >
-                <PanelErrorBoundary name="AI Editor">
-                  <React.Suspense
-                    fallback={
-                      <div className="grid h-full place-items-center text-xs text-fg-muted">
-                        Loading AI Editorâ€¦
-                      </div>
-                    }
-                  >
-                    <ChatPanel
-                      onClose={() => setPanelVisible("agentChat", false)}
-                    />
-                  </React.Suspense>
-                </PanelErrorBoundary>
-              </div>
-            </>
-          )}
-
           {/* Bottom toolbar above timeline */}
-          <div className="flex items-center" style={{ gridArea: "th" }}>
+          <div className="shrink-0">
             <BottomToolbar />
           </div>
 
@@ -564,11 +460,11 @@ export const EditorInterface: React.FC = () => {
 
           {/* Timeline Area */}
           <div
-            className="bg-tl-bg min-w-0 min-h-0 overflow-hidden flex flex-col rounded-xl border border-border shadow-sm"
-            style={{ gridArea: "timeline" }}
+            className="min-h-0 overflow-hidden flex flex-col"
+            style={{ height: `${effectiveTimelineVh}vh` }}
           >
             {panels.audioMixer?.visible && (
-              <div className="shrink-0 border-b border-border">
+              <div className="shrink-0 border-b border-white/[0.06]">
                 <PanelErrorBoundary name="Audio Mixer">
                   <AudioMixer
                     visible
@@ -579,7 +475,7 @@ export const EditorInterface: React.FC = () => {
             )}
 
             {panels.ai?.visible && (
-              <div className="shrink-0 border-b border-border">
+              <div className="shrink-0 border-b border-white/[0.06]">
                 <PanelErrorBoundary name="AI">
                   <AIPanel />
                 </PanelErrorBoundary>
@@ -594,7 +490,7 @@ export const EditorInterface: React.FC = () => {
               </div>
 
               {keyframeEditorOpen && (
-                <div className="shrink-0 min-w-0 border-l border-border">
+                <div className="shrink-0 min-w-0 border-l border-white/[0.06]">
                   <PanelErrorBoundary name="Keyframe Editor">
                     <KeyframeEditorPanel
                       clip={selectedClip}
@@ -612,6 +508,11 @@ export const EditorInterface: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Right Panel - Inspector */}
+        <div className="h-full overflow-hidden shrink-0">
+          <RightPanel />
         </div>
       </div>
 

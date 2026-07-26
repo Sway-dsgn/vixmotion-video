@@ -1,308 +1,236 @@
-import React, { useCallback, useState, useRef } from "react";
+import React, { useState } from "react";
 import {
-  Upload,
-  MoreVertical,
-  FolderOpen,
   ChevronDown,
+  ChevronRight,
+  Info,
+  Pin,
+  Plus,
+  Lock,
   List,
-  Grid,
 } from "@/icons/lucide-compat";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@vixmotion/ui";
-import { ToolcraftButton as Button } from "@vixmotion/ui";
-import { ToolcraftText as Text } from "@vixmotion/ui";
-import { useProjectStore } from "../../stores/project-store";
 
 export const RightPanel: React.FC = () => {
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [sortBy, setSortBy] = useState<"name" | "date" | "type" | "size">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [showSortMenu, setShowSortMenu] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const dropZoneRef = useRef<HTMLDivElement>(null);
-  const importMedia = useProjectStore((state) => state.importMedia);
+  const [transformExpanded, setTransformExpanded] = useState(true);
+  const [effectsExpanded, setEffectsExpanded] = useState(true);
+  const [selectedSpeed, setSelectedSpeed] = useState("1x");
+  const [audioExpanded, setAudioExpanded] = useState(true);
+  const [hue, setHue] = useState(180);
+  const [blur, setBlur] = useState(14);
+  const [exposure, setExposure] = useState(14);
+  const [blackLevels, setBlackLevels] = useState(14);
+  const [volume, setVolume] = useState(50);
+  const [exposureOpen, setExposureOpen] = useState(true);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  }, []);
+  const SectionHeader = ({
+    title,
+    expanded,
+    onToggle,
+    rightContent,
+    accent,
+  }: {
+    title: string;
+    expanded: boolean;
+    onToggle: () => void;
+    rightContent?: React.ReactNode;
+    accent?: boolean;
+  }) => (
+    <div
+      className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-white/[0.03] transition-colors"
+      onClick={onToggle}
+    >
+      <span className={`text-[11px] font-semibold tracking-wide ${accent ? "text-violet-400" : "text-white/60"}`}>
+        {title}
+      </span>
+      <div className="flex items-center gap-1">
+        {rightContent}
+        {expanded ? <ChevronDown size={10} className="text-white/30" /> : <ChevronRight size={10} className="text-white/30" />}
+      </div>
+    </div>
+  );
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!dropZoneRef.current?.contains(e.relatedTarget as Node)) {
-      setIsDragOver(false);
-    }
-  }, []);
+  const InputRow = ({ label, value, unit }: { label: string; value: string | number; unit?: string }) => (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-white/30 w-3">{label}</span>
+      <div className="flex-1 px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] text-white/60 font-mono">
+        {value}{unit || ""}
+      </div>
+    </div>
+  );
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      for (const file of files) {
-        try {
-          await importMedia(file);
-        } catch (error) {
-          console.error("Failed to import media:", error);
-        }
-      }
-    }
-  }, [importMedia]);
-
-  const handleFileInput = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      for (const file of files) {
-        try {
-          await importMedia(file);
-        } catch (error) {
-          console.error("Failed to import media:", error);
-        }
-      }
-      e.target.value = "";
-    }
-  }, [importMedia]);
-
-  const mediaItems = [
-    { id: "1", name: "video-01.mp4", type: "video", size: "15.2 MB", duration: "00:30" },
-    { id: "2", name: "photo-02.jpg", type: "image", size: "3.4 MB", duration: null },
-    { id: "3", name: "audio-03.mp3", type: "audio", size: "5.1 MB", duration: "02:15" },
-    { id: "4", name: "video-04.mov", type: "video", size: "42.8 MB", duration: "01:45" },
-  ];
-
-  const filteredItems = [...mediaItems].sort((a, b) => {
-    let comparison = 0;
-    if (sortBy === "name") comparison = a.name.localeCompare(b.name);
-    else if (sortBy === "size") comparison = a.size.localeCompare(b.size);
-    else comparison = 0;
-    return sortOrder === "asc" ? comparison : -comparison;
-  });
+  const Slider = ({
+    label,
+    value,
+    onChange,
+    min = 0,
+    max = 360,
+  }: {
+    label: string;
+    value: number;
+    onChange: (v: number) => void;
+    min?: number;
+    max?: number;
+  }) => (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-white/50">{label}</span>
+        <span className="text-[10px] text-white/30 font-mono">{value}</span>
+      </div>
+      <div className="relative h-1.5 bg-white/[0.06] rounded-full cursor-pointer" onClick={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        onChange(Math.round(min + ratio * (max - min)));
+      }}>
+        <div
+          className="absolute top-0 left-0 h-full bg-accent rounded-full"
+          style={{ width: `${((value - min) / (max - min)) * 100}%` }}
+        />
+        <div
+          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md border border-black/20"
+          style={{ left: `calc(${((value - min) / (max - min)) * 100}% - 6px)` }}
+        />
+      </div>
+    </div>
+  );
 
   return (
-    <div className="h-full w-full flex flex-col bg-bg-1 border-l border-border">
+    <div className="h-full flex flex-col bg-[#111111] border-l border-white/[0.06] overflow-hidden" style={{ width: "220px" }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg-1">
-        <div className="flex items-center gap-3">
-          <Text type="label" weight="semibold" color="primary" className="text-text-primary">
-            Assets
-          </Text>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          {/* View mode toggle */}
-          <div className="flex bg-bg-2 rounded-lg p-0.5">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded transition-colors ${
-                viewMode === "grid"
-                  ? "bg-primary text-white"
-                  : "text-text-muted hover:text-white"
-              }`}
-              aria-label="Grid view"
-            >
-              <Grid size={14} />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded transition-colors ${
-                viewMode === "list"
-                  ? "bg-primary text-white"
-                  : "text-text-muted hover:text-white"
-              }`}
-              aria-label="List view"
-            >
-              <List size={14} />
-            </button>
-          </div>
-
-          {/* Sort dropdown */}
-          <DropdownMenu open={showSortMenu} onOpenChange={setShowSortMenu}>
-            <DropdownMenuTrigger asChild>
-              <button
-                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-text-muted hover:text-white"
-                aria-label="Sort"
-              >
-                <ChevronDown size={14} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-36 bg-bg-1 border border-border rounded-lg shadow-lg py-1 z-50"
-            >
-              {(["name", "date", "type", "size"] as const).map((key) => (
-                <DropdownMenuItem
-                  key={key}
-                  onClick={() => {
-                    setSortBy(key);
-                    setShowSortMenu(false);
-                  }}
-                  className={`text-text-primary hover:bg-white/5 px-3 py-2 text-sm cursor-pointer ${sortBy === key ? "text-primary" : ""}`}
-                >
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Import button */}
-          <div className="relative">
-            <input
-              type="file"
-              ref={(el) => { if (el) el.multiple = true; }}
-              onChange={handleFileInput}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              accept="video/*,image/*,audio/*"
-            />
-            <Button
-              label="Import"
-              variant="outline"
-              size="sm"
-              icon={<Upload size={14} />}
-              className="px-3 py-1.5 border-border text-text-primary hover:bg-white/5"
-            />
-          </div>
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/[0.06] shrink-0">
+        <span className="text-[13px] font-medium text-white">Untitled</span>
+        <div className="flex items-center gap-1">
+          <button className="p-1 rounded text-white/30 hover:text-white/60 transition-colors">
+            <Info size={12} />
+          </button>
+          <button className="p-1 rounded text-white/30 hover:text-white/60 transition-colors">
+            <Pin size={12} />
+          </button>
         </div>
       </div>
 
-      {/* Drop Zone / Media Grid */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4">
-        {mediaItems.length === 0 ? (
-          <div
-            ref={dropZoneRef}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`flex-1 flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all ${
-              isDragOver
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <div className="relative mb-4">
-              <Upload size={48} className="text-text-muted" />
-              <button
-                className="absolute -top-2 -right-2 p-1 rounded-lg hover:bg-white/10 transition-colors text-text-muted hover:text-white"
-                aria-label="More options"
-              >
-                <MoreVertical size={16} />
-              </button>
-              <button
-                className="absolute -top-2 -left-2 p-1 rounded-lg hover:bg-white/10 transition-colors text-text-muted hover:text-white"
-                aria-label="Open folder"
-              >
-                <FolderOpen size={16} />
-              </button>
-            </div>
-            <Text
-              type="body"
-              color="secondary"
-              className="text-text-muted text-center px-8 leading-relaxed"
-            >
-              Drag and drop videos, photos, and audio files here
-            </Text>
-            <div className="mt-4">
-              <input
-                type="file"
-                onChange={handleFileInput}
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                multiple
-                accept="video/*,image/*,audio/*"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                icon={<Upload size={14} />}
-                className="px-4 py-2 border-border text-text-primary hover:bg-white/5"
-              >
-                Browse Files
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className={viewMode === "grid" ? "grid grid-cols-2 gap-3 auto-rows-min" : "space-y-2"}>
-            {filteredItems.map((item) => (
-              <div
-                key={item.id}
-                className={`group p-2 rounded-lg border transition-colors ${
-                  viewMode === "grid"
-                    ? "border-border hover:border-primary/50 bg-bg-2/50"
-                    : "border-border hover:border-primary/50 bg-bg-2/50 flex items-center gap-3"
-                }`}
-              >
-                {viewMode === "grid" ? (
-                  <>
-                    <div className="aspect-video w-full rounded bg-black/50 flex items-center justify-center mb-2 relative overflow-hidden">
-                      {item.type === "video" && (
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto mb-1 rounded-full bg-white/20 flex items-center justify-center">
-                            <Upload size={20} className="text-white" />
-                          </div>
-                          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/70 rounded text-[10px] font-mono text-white">
-                            {item.duration}
-                          </div>
-                        </div>
-                      )}
-                      {item.type === "image" && (
-                        <div className="text-center">
-                          <Upload size={28} className="text-text-muted mx-auto" />
-                        </div>
-                      )}
-                      {item.type === "audio" && (
-                        <div className="text-center">
-                          <Upload size={28} className="text-text-muted mx-auto" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <Text
-                        type="supporting"
-                        color="primary"
-                        weight="medium"
-                        className="text-text-primary truncate"
-                      >
-                        {item.name}
-                      </Text>
-                      <Text type="supporting" color="secondary" className="text-xs text-text-muted">
-                        {item.size} • {item.type}
-                      </Text>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-14 h-14 flex-shrink-0 rounded bg-black/50 flex items-center justify-center">
-                      <Upload size={20} className="text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <Text
-                        type="supporting"
-                        color="primary"
-                        weight="medium"
-                        className="text-text-primary truncate"
-                      >
-                        {item.name}
-                      </Text>
-                      <Text type="supporting" color="secondary" className="text-xs text-text-muted">
-                        {item.size} • {item.type} {item.duration ? `• ${item.duration}` : ""}
-                      </Text>
-                    </div>
-                    <div className="flex items-center gap-2 text-text-muted">
-                      <MoreVertical size={16} />
-                    </div>
-                  </>
-                )}
+      <div className="flex-1 overflow-y-auto">
+        {/* Transform section */}
+        <div className="border-b border-white/[0.06]">
+          <SectionHeader title="Transform" expanded={transformExpanded} onToggle={() => setTransformExpanded(!transformExpanded)} />
+          {transformExpanded && (
+            <div className="px-3 pb-3 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <InputRow label="X" value={120} />
+                <InputRow label="Y" value={180} />
               </div>
+              <div className="grid grid-cols-2 gap-2 items-center">
+                <InputRow label="W" value={1920} />
+                <div className="flex items-center gap-1">
+                  <InputRow label="H" value={1080} />
+                  <button className="p-1 text-white/30 hover:text-white/60">
+                    <Lock size={10} />
+                  </button>
+                </div>
+              </div>
+              <InputRow label="R" value="0°" />
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-white/30">Blend</span>
+                <div className="flex-1 flex items-center justify-between px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] text-white/50">
+                  Normal
+                  <ChevronDown size={9} className="text-white/30" />
+                </div>
+              </div>
+              {/* Speed chips */}
+              <div>
+                <span className="text-[10px] text-white/30 mb-1 block">Speed</span>
+                <div className="flex gap-1">
+                  {["5x", "1x", "15x", "2x", "Custom"].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSelectedSpeed(s)}
+                      className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                        selectedSpeed === s
+                          ? "bg-accent text-white"
+                          : "bg-white/[0.04] text-white/40 hover:text-white/60"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* AI Magic Tools */}
+        <div className="border-b border-white/[0.06]">
+          <SectionHeader title="AI Magic Tools" expanded={true} onToggle={() => {}} accent />
+          <div className="px-3 pb-3 grid grid-cols-2 gap-1.5">
+            {[
+              { label: "Green Screen", isNew: false },
+              { label: "Inpainting", isNew: true },
+              { label: "Stylize", isNew: true },
+              { label: "Colorize", isNew: false },
+            ].map((tool) => (
+              <button
+                key={tool.label}
+                className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+              >
+                <div className="w-6 h-6 rounded bg-white/[0.06] flex items-center justify-center">
+                  <div className="w-3 h-3 rounded-sm bg-gradient-to-br from-violet-400 to-pink-400 opacity-50" />
+                </div>
+                <span className="text-[9px] text-white/50">{tool.label}</span>
+                {tool.isNew && (
+                  <span className="px-1 py-0.5 rounded text-[7px] font-bold text-pink-400 bg-pink-400/10">new</span>
+                )}
+              </button>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Effects section */}
+        <div className="border-b border-white/[0.06]">
+          <SectionHeader
+            title="Effects"
+            expanded={effectsExpanded}
+            onToggle={() => setEffectsExpanded(!effectsExpanded)}
+            rightContent={
+              <button className="p-0.5 rounded text-white/30 hover:text-white/60" onClick={(e) => e.stopPropagation()}>
+                <Plus size={10} />
+              </button>
+            }
+          />
+          {effectsExpanded && (
+            <div className="px-3 pb-3 space-y-3">
+              <Slider label="Hue" value={hue} onChange={setHue} max={360} />
+              <Slider label="Gaussian Blur" value={blur} onChange={setBlur} max={50} />
+              {/* Nested: Exposure & Black Levels */}
+              <div className="border border-white/[0.06] rounded-lg overflow-hidden">
+                <div
+                  className="flex items-center justify-between px-2 py-1.5 cursor-pointer hover:bg-white/[0.03]"
+                  onClick={() => setExposureOpen(!exposureOpen)}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <List size={10} className="text-white/30" />
+                    <span className="text-[10px] text-white/50">Exposure & Black Levels</span>
+                  </div>
+                  {exposureOpen ? <ChevronDown size={9} className="text-white/30" /> : <ChevronRight size={9} className="text-white/30" />}
+                </div>
+                {exposureOpen && (
+                  <div className="px-2 pb-2 space-y-2">
+                    <Slider label="Exposure" value={exposure} onChange={setExposure} max={50} />
+                    <Slider label="Black Levels" value={blackLevels} onChange={setBlackLevels} max={50} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Audio section */}
+        <div>
+          <SectionHeader title="Audio" expanded={audioExpanded} onToggle={() => setAudioExpanded(!audioExpanded)} />
+          {audioExpanded && (
+            <div className="px-3 pb-3">
+              <Slider label="Volume" value={volume} onChange={setVolume} max={100} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
