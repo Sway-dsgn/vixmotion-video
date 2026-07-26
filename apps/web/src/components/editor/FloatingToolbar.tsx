@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   FolderOpen,
   Headphones,
@@ -17,157 +17,95 @@ import { useUIStore } from "../../stores/ui-store";
 import { useProjectStore } from "../../stores/project-store";
 
 interface FloatingToolbarProps {
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-interface ToolDef {
-  icon: React.FC<{ size: number; className?: string }>;
-  label: string;
-  onClick: () => void;
-}
-
-export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ containerRef }) => {
+export const FloatingToolbar: React.FC<FloatingToolbarProps> = () => {
   const { togglePanel, panels } = useUIStore();
   const { importMedia } = useProjectStore();
 
-  const [position, setPosition] = useState({ x: 16, y: 16 });
-  const [isVisible, setIsVisible] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const hasDragged = useRef(false);
+  const [pos, setPos] = useState({ x: 20, y: 20 });
+  const [visible, setVisible] = useState(true);
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number; moved: boolean } | null>(null);
 
-  const clampPosition = useCallback(
-    (x: number, y: number) => {
-      const container = containerRef.current;
-      if (!container) return { x, y };
-      const rect = container.getBoundingClientRect();
-      const toolbarW = 44;
-      const toolbarH = 340;
-      return {
-        x: Math.max(0, Math.min(x, rect.width - toolbarW)),
-        y: Math.max(0, Math.min(y, rect.height - toolbarH)),
-      };
-    },
-    [containerRef],
-  );
-
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(true);
-      hasDragged.current = false;
-      dragOffset.current = {
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      };
-    },
-    [position],
-  );
-
+  // Global drag listeners
   useEffect(() => {
-    if (!isDragging) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      hasDragged.current = true;
-      const newX = e.clientX - dragOffset.current.x;
-      const newY = e.clientY - dragOffset.current.y;
-      setPosition(clampPosition(newX, newY));
+    const onMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      dragRef.current.moved = true;
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+      const newX = dragRef.current.origX + dx;
+      const newY = dragRef.current.origY + dy;
+      // Clamp within viewport
+      const maxX = window.innerWidth - 48;
+      const maxY = window.innerHeight - 50;
+      setPos({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY)),
+      });
     };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
+    const onUp = () => {
+      dragRef.current = null;
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
     };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, []);
 
+  const onGripDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragRef.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y, moved: false };
     document.body.style.cursor = "grabbing";
     document.body.style.userSelect = "none";
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+  };
 
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging, clampPosition]);
+  const onToolClick = (action: () => void) => {
+    // Only fire if we didn't drag
+    if (dragRef.current?.moved) return;
+    action();
+  };
 
-  const handleImport = useCallback(() => {
+  const handleImport = () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "video/*,image/*,audio/*";
     input.multiple = true;
     input.onchange = async () => {
-      const files = Array.from(input.files || []);
-      for (const file of files) {
-        try {
-          await importMedia(file);
-        } catch (err) {
-          console.error("Import failed:", err);
-        }
+      for (const file of Array.from(input.files || [])) {
+        try { await importMedia(file); } catch { /* ignore */ }
       }
     };
     input.click();
-  }, [importMedia]);
+  };
 
-  const tools: ToolDef[] = [
-    {
-      icon: FolderOpen,
-      label: "Import media",
-      onClick: handleImport,
-    },
-    {
-      icon: Headphones,
-      label: "Audio mixer",
-      onClick: () => togglePanel("audioMixer"),
-    },
-    {
-      icon: Type,
-      label: "Add text",
-      onClick: () => togglePanel("effects"),
-    },
-    {
-      icon: Sparkles,
-      label: "AI Editor",
-      onClick: () => togglePanel("agentChat"),
-    },
-    {
-      icon: Smile,
-      label: "AI Panel",
-      onClick: () => togglePanel("ai"),
-    },
-    {
-      icon: Subtitles,
-      label: "Subtitles",
-      onClick: () => togglePanel("subtitles"),
-    },
-    {
-      icon: PenTool,
-      label: "Color Grading",
-      onClick: () => togglePanel("colorGrading"),
-    },
-    {
-      icon: SlidersHorizontal,
-      label: "Inspector",
-      onClick: () => togglePanel("inspector"),
-    },
-    {
-      icon: Settings,
-      label: "Settings",
-      onClick: () => {},
-    },
+  const isActive = (panelId: string) => Boolean(panels[panelId as keyof typeof panels]?.visible);
+
+  const tools = [
+    { icon: FolderOpen, label: "Import", active: false, action: handleImport },
+    { icon: Headphones, label: "Audio", panel: "audioMixer" },
+    { icon: Type, label: "Text", panel: "effects" },
+    { icon: Sparkles, label: "AI Chat", panel: "agentChat" },
+    { icon: Smile, label: "AI Panel", panel: "ai" },
+    { icon: Subtitles, label: "Subtitles", panel: "subtitles" },
+    { icon: PenTool, label: "Color", panel: "colorGrading" },
+    { icon: SlidersHorizontal, label: "Inspector", panel: "inspector" },
+    { icon: Settings, label: "Settings", panel: "mediaLibrary" },
   ];
 
-  if (!isVisible) {
+  if (!visible) {
     return (
       <button
-        onClick={() => setIsVisible(true)}
-        className="absolute z-30 top-2 left-2 p-2 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
-        style={{
-          background: "rgba(0,0,0,0.7)",
-          backdropFilter: "blur(8px)",
-        }}
-        aria-label="Show toolbar"
+        onClick={() => setVisible(true)}
+        className="absolute z-30 p-2 rounded-lg border border-white/10 hover:bg-white/20 transition-colors"
+        style={{ left: pos.x, top: pos.y, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+        title="Show toolbar"
       >
         <Eye size={16} className="text-white/70" />
       </button>
@@ -177,68 +115,54 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ containerRef }
   return (
     <div
       className="absolute z-30 select-none"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-      }}
+      style={{ left: pos.x, top: pos.y }}
     >
       <div
-        className="flex flex-col items-center gap-0.5 rounded-xl border border-white/10 py-1.5"
-        style={{
-          background: "rgba(0,0,0,0.7)",
-          backdropFilter: "blur(8px)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-        }}
+        className="flex flex-col items-center rounded-xl border border-white/10 py-1"
+        style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
       >
         {/* Drag handle */}
         <div
-          onMouseDown={handleMouseDown}
-          className="w-8 h-6 flex items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-white/10 transition-colors"
-          aria-label="Drag toolbar"
+          onMouseDown={onGripDown}
+          className="w-8 h-5 flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-white/10 rounded-t-lg transition-colors"
+          title="Drag to move"
         >
-          <GripVertical size={14} className="text-white/40" />
+          <GripVertical size={12} className="text-white/40" />
         </div>
 
-        <div className="w-6 h-px bg-white/10" />
+        <div className="w-5 h-px bg-white/10" />
 
-        {/* Tool buttons */}
-        {tools.map((tool) => {
-          const isActive =
-            (tool.label === "Audio mixer" && panels.audioMixer?.visible) ||
-            (tool.label === "AI Editor" && panels.agentChat?.visible) ||
-            (tool.label === "AI Panel" && panels.ai?.visible);
+        {/* Tools */}
+        {tools.map((t) => {
+          const panelId = (t as { panel?: string }).panel;
+          const active = panelId ? isActive(panelId) : false;
+          const action = panelId ? () => togglePanel(panelId as any) : (t as { action?: () => void }).action!;
 
           return (
             <button
-              key={tool.label}
-              onClick={() => {
-                if (!hasDragged.current) {
-                  tool.onClick();
-                }
-              }}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
-                isActive
-                  ? "bg-accent text-white"
-                  : "text-white/70 hover:text-white hover:bg-white/10"
+              key={t.label}
+              onMouseUp={() => onToolClick(action)}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+                active
+                  ? "bg-accent text-white shadow-sm shadow-accent/30"
+                  : "text-white/60 hover:text-white hover:bg-white/10"
               }`}
-              aria-label={tool.label}
-              title={tool.label}
+              title={t.label}
             >
-              <tool.icon size={16} />
+              <t.icon size={15} />
             </button>
           );
         })}
 
-        <div className="w-6 h-px bg-white/10" />
+        <div className="w-5 h-px bg-white/10" />
 
-        {/* Hide button */}
+        {/* Hide */}
         <button
-          onClick={() => setIsVisible(false)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-white/40 hover:text-white/70 hover:bg-white/10 transition-colors"
-          aria-label="Hide toolbar"
+          onMouseUp={() => onToolClick(() => setVisible(false))}
+          className="w-8 h-7 flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/10 rounded-b-lg transition-colors"
           title="Hide toolbar"
         >
-          <EyeOff size={14} />
+          <EyeOff size={12} />
         </button>
       </div>
     </div>

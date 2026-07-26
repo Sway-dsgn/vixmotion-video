@@ -25,6 +25,7 @@ import { useUIStore } from "../../stores/ui-store";
 import { useTimelineStore, ZOOM_PRESETS } from "../../stores/timeline-store";
 import { useProjectStore } from "../../stores/project-store";
 import { useRouter } from "../../hooks/use-router";
+import { toast } from "../../stores/notification-store";
 
 export const BottomToolbar: React.FC = () => {
   const {
@@ -32,14 +33,16 @@ export const BottomToolbar: React.FC = () => {
     toggleTimelineMaximized,
     togglePanel,
     panels,
+    getSelectedClipIds,
   } = useUIStore();
   const {
     pixelsPerSecond,
     zoomIn,
     zoomOut,
     setZoom,
+    playheadPosition,
   } = useTimelineStore();
-  const { createMotionComposition } = useProjectStore();
+  const { createMotionComposition, splitClip, removeClip, duplicateClip } = useProjectStore();
   const { navigate } = useRouter();
 
   const [showZoomMenu, setShowZoomMenu] = useState(false);
@@ -105,16 +108,42 @@ export const BottomToolbar: React.FC = () => {
     }
   }, [createMotionComposition, navigate, isCreatingMotion]);
 
+  const handleEditAction = useCallback(async (action: string) => {
+    const clipIds = getSelectedClipIds();
+    if (clipIds.length === 0) {
+      toast.info("No clip selected", "Select a clip on the timeline first");
+      return;
+    }
+    const clipId = clipIds[0];
+    switch (action) {
+      case "cut":
+      case "split":
+        await splitClip(clipId, playheadPosition);
+        toast.success("Clip split", "Split at playhead position");
+        break;
+      case "delete":
+        await removeClip(clipId);
+        toast.success("Clip deleted", "Removed from timeline");
+        break;
+      case "duplicate":
+        await duplicateClip(clipId);
+        toast.success("Clip duplicated", "Copy added to timeline");
+        break;
+      default:
+        toast.info(action, "Feature coming soon");
+    }
+  }, [getSelectedClipIds, splitClip, removeClip, duplicateClip, playheadPosition]);
+
   const editTools = [
-    { icon: Scissors, label: "Cut", shortcut: "C" },
-    { icon: AlignLeft, label: "Align", shortcut: "A" },
-    { icon: PanelBottom, label: "Dock", shortcut: "D" },
-    { icon: Link2, label: "Link", shortcut: "L" },
-    { icon: Copy, label: "Duplicate", shortcut: "Ctrl+D" },
-    { icon: Snowflake, label: "Freeze", shortcut: "F" },
-    { icon: Trash2, label: "Delete", shortcut: "Del" },
-    { icon: Bookmark, label: "Bookmark", shortcut: "B" },
-    { icon: BarChart2, label: "Graph", shortcut: "G" },
+    { icon: Scissors, label: "Cut / Split", shortcut: "S", action: "cut" },
+    { icon: Trash2, label: "Delete", shortcut: "Del", action: "delete" },
+    { icon: Copy, label: "Duplicate", shortcut: "Ctrl+D", action: "duplicate" },
+    { icon: AlignLeft, label: "Align", shortcut: "A", action: "align" },
+    { icon: PanelBottom, label: "Dock", shortcut: "D", action: "dock" },
+    { icon: Link2, label: "Link", shortcut: "L", action: "link" },
+    { icon: Snowflake, label: "Freeze", shortcut: "F", action: "freeze" },
+    { icon: Bookmark, label: "Bookmark", shortcut: "B", action: "bookmark" },
+    { icon: BarChart2, label: "Graph", shortcut: "G", action: "graph" },
   ];
 
   const zoomPresets = [25, 50, 100, 150, 200, 300, 400];
@@ -195,7 +224,7 @@ export const BottomToolbar: React.FC = () => {
         {editTools.map((tool) => (
           <button
             key={tool.label}
-            onClick={() => {}}
+            onClick={() => handleEditAction(tool.action)}
             className="p-1.5 rounded-lg text-text-muted hover:text-white hover:bg-white/10 transition-colors relative group"
             aria-label={`${tool.label} (${tool.shortcut})`}
           >
