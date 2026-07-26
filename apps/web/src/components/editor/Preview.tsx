@@ -8445,7 +8445,7 @@ export const Preview: React.FC = () => {
 
       {/* Floating Toolbar - positioned relative to full preview container */}
       {!cropMode && !isPlaying && (
-        <FloatingToolbar containerRef={containerRef} />
+        <FloatingToolbar />
       )}
     </div>
   );
