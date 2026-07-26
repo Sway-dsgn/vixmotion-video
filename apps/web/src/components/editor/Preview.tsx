@@ -92,7 +92,6 @@ import {
 } from "./preview/index";
 import { snapCanvasPosition } from "./preview/canvas-snapping";
 import { ProcessingOverlay } from "./ProcessingOverlay";
-import { FloatingToolbar } from "./FloatingToolbar";
 import {
   getPersonSegmentationEngine,
   getBackgroundRemovalEngine,
@@ -8442,11 +8441,6 @@ export const Preview: React.FC = () => {
         </div>
         </div>
       </div>
-
-      {/* Floating Toolbar - positioned relative to full preview container */}
-      {!cropMode && !isPlaying && (
-        <FloatingToolbar />
-      )}
     </div>
   );
 };
