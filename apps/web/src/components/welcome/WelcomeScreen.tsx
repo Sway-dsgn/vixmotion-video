@@ -18,7 +18,7 @@ import { SOCIAL_MEDIA_PRESETS, type SocialMediaCategory } from "@vixmotion/core"
 import { TemplateGallery } from "./TemplateGallery";
 import { RecentProjects } from "./RecentProjects";
 import { useRouter } from "../../hooks/use-router";
-import logoIcon from "/logo-icon.png";
+
 import { useEditorPreload } from "../../hooks/useEditorPreload";
 import { useAnalytics, AnalyticsEvents } from "../../hooks/useAnalytics";
 
@@ -63,7 +63,7 @@ const FORMAT_OPTIONS: FormatOption[] = [
 ];
 
 const VixMotionLogo: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <img src={logoIcon} alt="VixMotion" className={className} />
+  <img src="/logo-icon.png" alt="VixMotion" className={className} />
 );
 
 type ViewMode = "home" | "templates" | "recent";
