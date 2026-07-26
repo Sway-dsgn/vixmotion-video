@@ -452,13 +452,13 @@ export const EditorInterface: React.FC = () => {
   const gridStyle: React.CSSProperties = chatVisible
     ? {
         gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px 1fr ${RESIZE_HANDLE}px ${inspectorWidth}px ${RESIZE_HANDLE}px ${chatWidth}px`,
-        gridTemplateRows: `1fr ${RESIZE_HANDLE}px ${effectiveTimelineVh}vh`,
+        gridTemplateRows: `1fr auto ${effectiveTimelineVh}vh`,
         gridTemplateAreas:
           "'media mh stage ih inspector ch chat' 'th th th th th th th' 'timeline timeline timeline timeline timeline timeline timeline'",
       }
     : {
         gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px 1fr ${RESIZE_HANDLE}px ${inspectorWidth}px`,
-        gridTemplateRows: `1fr ${RESIZE_HANDLE}px ${effectiveTimelineVh}vh`,
+        gridTemplateRows: `1fr auto ${effectiveTimelineVh}vh`,
         gridTemplateAreas:
           "'media mh stage ih inspector' 'th th th th th' 'timeline timeline timeline timeline timeline'",
       };

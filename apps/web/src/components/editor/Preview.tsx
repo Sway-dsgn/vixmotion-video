@@ -1,4 +1,4 @@
-﻿import React, {
+import React, {
   useRef,
   useEffect,
   useCallback,
@@ -3260,7 +3260,7 @@ export const Preview: React.FC = () => {
       if (!ctx) return;
 
       const emptyBg = isDark ? "#0f0f11" : "#ffffff";
-      const emptyText = isDark ? "#52525b" : "#a1a1aa";
+      const emptyText = isDark ? "#71717a" : "#a1a1aa";
       const textPrimary = isDark ? "#ffffff" : "#18181b";
       const textSecondary = isDark ? "#a1a1aa" : "#71717a";
 
@@ -3407,8 +3407,9 @@ export const Preview: React.FC = () => {
         !hasActiveAudioClip
       ) {
         ctx.fillStyle = emptyText;
-        ctx.font = "24px Inter, sans-serif";
+        ctx.font = "500 16px Inter, system-ui, sans-serif";
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText(
           "Import media to get started",
           canvas.width / 2,
@@ -8149,7 +8150,7 @@ export const Preview: React.FC = () => {
 
       {/* Player Controls with integrated Scrub Bar */}
       <div
-        className={`border-t border-border transition-all duration-300 ${
+        className={`border-t border-border transition-all duration-300 shrink-0 ${
           isMaximized || isFullscreen
             ? "absolute bottom-0 left-0 right-0 z-50 bg-bg-1 backdrop-blur-sm"
             : "z-20 bg-bg-1"

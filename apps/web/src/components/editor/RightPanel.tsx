@@ -174,7 +174,7 @@ export const RightPanel: React.FC = () => {
       </div>
 
       {/* Drop Zone / Media Grid */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4">
         {mediaItems.length === 0 ? (
           <div
             ref={dropZoneRef}
@@ -228,7 +228,7 @@ export const RightPanel: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className={viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-2"}>
+          <div className={viewMode === "grid" ? "grid grid-cols-2 gap-3 auto-rows-min" : "space-y-2"}>
             {filteredItems.map((item) => (
               <div
                 key={item.id}

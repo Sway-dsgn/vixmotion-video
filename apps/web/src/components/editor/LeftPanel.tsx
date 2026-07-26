@@ -27,20 +27,20 @@ export const LeftPanel: React.FC = () => {
     <div
       className="h-full w-full flex flex-col items-center justify-center bg-[#141414] p-8"
     >
-      <div className="text-center max-w-sm">
+      <div className="text-center max-w-sm flex flex-col items-center">
         <div
-          className="w-14 h-14 mx-auto mb-4 rounded-xl border border-border flex items-center justify-center"
+          className="w-14 h-14 mb-5 rounded-xl border border-border flex items-center justify-center"
           style={{ backgroundColor: "#1e1e1e" }}
         >
           <SlidersHorizontal size={28} className="text-text-muted" />
         </div>
-        <Text type="body" weight="bold" color="primary" className="text-xl text-white mb-2">
+        <Text type="body" weight="bold" color="primary" className="text-xl text-white">
           It's empty here
         </Text>
         <Text
           type="supporting"
           color="secondary"
-          className="text-text-muted text-center leading-relaxed"
+          className="text-text-muted text-center leading-relaxed mt-3"
         >
           Click an element on the timeline to edit its properties
         </Text>
