@@ -1,12 +1,14 @@
-﻿import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ToolcraftText as Text } from "@vixmotion/ui";
 
 import { Toolbar } from "./Toolbar";
 import { EditorActionRail } from "./EditorActionRail";
-import { AssetsPanel } from "./AssetsPanel";
 import { Preview } from "./Preview";
-import { InspectorPanel } from "./InspectorPanel";
+import { RightPanel } from "./RightPanel";
+import { LeftPanel } from "./LeftPanel";
+import { TopNavbar } from "./TopNavbar";
 import { Timeline } from "./Timeline";
+import { BottomToolbar } from "./BottomToolbar";
 import { KeyframeEditorPanel } from "./KeyframeEditorPanel";
 import { AudioMixer } from "../audio-mixer";
 import { AIPanel } from "./ai-panel/AIPanel";
@@ -52,13 +54,13 @@ const MAX_TIMELINE_VH = 70;
 // Compact mode: timeline takes most of the height, leaving a small preview.
 const COMPACT_TIMELINE_VH = 80;
 
-const DEFAULT_MEDIA_W = 460;
+const DEFAULT_MEDIA_W = 500;
 const MIN_MEDIA_W = 320;
 const MAX_MEDIA_W = 640;
 
-const DEFAULT_INSPECTOR_W = 360;
+const DEFAULT_INSPECTOR_W = 500;
 const MIN_INSPECTOR_W = 280;
-const MAX_INSPECTOR_W = 560;
+const MAX_INSPECTOR_W = 640;
 
 const DEFAULT_CHAT_W = 380;
 const MIN_CHAT_W = 320;
@@ -468,146 +470,143 @@ export const EditorInterface: React.FC = () => {
       ref={rootRef}
       className="w-full h-full bg-bg text-fg overflow-hidden font-sans select-none relative z-20 flex flex-col"
     >
-      <Toolbar />
+      <TopNavbar />
 
-      <div className="flex-1 min-h-0 flex">
-        <EditorActionRail />
-        <div
-          className="flex-1 min-h-0 grid gap-0 bg-bg p-2.5"
-          style={gridStyle}
-        >
-        <div
-          className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
-          style={{ gridArea: "media" }}
-        >
-          <PanelErrorBoundary name="Media">
-            <AssetsPanel />
-          </PanelErrorBoundary>
-        </div>
+      <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 grid gap-0 bg-bg p-2.5" style={gridStyle}>
+          {/* Left Panel - Inspector */}
+          <div
+            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
+            style={{ gridArea: "media" }}
+          >
+            <PanelErrorBoundary name="Inspector">
+              <LeftPanel />
+            </PanelErrorBoundary>
+          </div>
 
-        <div
-          className="grid place-items-center cursor-col-resize group/h"
-          style={{ gridArea: "mh" }}
-          onMouseDown={beginResize("media")}
-        >
-          <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
-        </div>
+          <div
+            className="grid place-items-center cursor-col-resize group/h"
+            style={{ gridArea: "mh" }}
+            onMouseDown={beginResize("media")}
+          >
+            <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
+          </div>
 
-        <div
-          className="bg-stage-bg min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
-          style={{ gridArea: "stage" }}
-        >
-          <PanelErrorBoundary name="Stage">
-            <Preview />
-          </PanelErrorBoundary>
-        </div>
+          {/* Center Stage - Preview */}
+          <div
+            className="bg-stage-bg min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
+            style={{ gridArea: "stage" }}
+          >
+            <PanelErrorBoundary name="Stage">
+              <Preview />
+            </PanelErrorBoundary>
+          </div>
 
-        <div
-          className="grid place-items-center cursor-col-resize group/h"
-          style={{ gridArea: "ih" }}
-          onMouseDown={beginResize("inspector")}
-        >
-          <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
-        </div>
+          <div
+            className="grid place-items-center cursor-col-resize group/h"
+            style={{ gridArea: "ih" }}
+            onMouseDown={beginResize("inspector")}
+          >
+            <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
+          </div>
 
-        <div
-          className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
-          style={{ gridArea: "inspector" }}
-        >
-          <PanelErrorBoundary name="Inspector">
-            <InspectorPanel />
-          </PanelErrorBoundary>
-        </div>
+          {/* Right Panel - Assets */}
+          <div
+            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
+            style={{ gridArea: "inspector" }}
+          >
+            <PanelErrorBoundary name="Assets">
+              <RightPanel />
+            </PanelErrorBoundary>
+          </div>
 
-        {chatVisible && (
-          <>
-            <div
-              className="grid place-items-center cursor-col-resize group/h"
-              style={{ gridArea: "ch" }}
-              onMouseDown={beginResize("chat")}
-            >
-              <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
-            </div>
+          {chatVisible && (
+            <>
+              <div
+                className="grid place-items-center cursor-col-resize group/h"
+                style={{ gridArea: "ch" }}
+                onMouseDown={beginResize("chat")}
+              >
+                <span className="h-10 w-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
+              </div>
 
-            <div
-              className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
-              style={{ gridArea: "chat" }}
-            >
-              <PanelErrorBoundary name="AI Editor">
-                <React.Suspense
-                  fallback={
-                    <div className="grid h-full place-items-center text-xs text-fg-muted">
-                      Loading AI Editorâ€¦
-                    </div>
-                  }
-                >
-                  <ChatPanel
-                    onClose={() => setPanelVisible("agentChat", false)}
-                  />
-                </React.Suspense>
-              </PanelErrorBoundary>
-            </div>
-          </>
-        )}
-
-        <div
-          className="grid place-items-center cursor-row-resize group/h"
-          style={{ gridArea: "th" }}
-          onMouseDown={beginResize("timeline")}
-        >
-          <span className="w-10 h-1 rounded-full bg-transparent group-hover/h:bg-accent/40 transition-colors" />
-        </div>
-
-        <div
-          className="bg-tl-bg min-w-0 min-h-0 overflow-hidden flex flex-col rounded-xl border border-border shadow-sm"
-          style={{ gridArea: "timeline" }}
-        >
-          {panels.audioMixer?.visible && (
-            <div className="shrink-0 border-b border-border">
-              <PanelErrorBoundary name="Audio Mixer">
-                <AudioMixer
-                  visible
-                  onClose={() => setPanelVisible("audioMixer", false)}
-                />
-              </PanelErrorBoundary>
-            </div>
+              <div
+                className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
+                style={{ gridArea: "chat" }}
+              >
+                <PanelErrorBoundary name="AI Editor">
+                  <React.Suspense
+                    fallback={
+                      <div className="grid h-full place-items-center text-xs text-fg-muted">
+                        Loading AI Editorâ€¦
+                      </div>
+                    }
+                  >
+                    <ChatPanel
+                      onClose={() => setPanelVisible("agentChat", false)}
+                    />
+                  </React.Suspense>
+                </PanelErrorBoundary>
+              </div>
+            </>
           )}
 
-          {panels.ai?.visible && (
-            <div className="shrink-0 border-b border-border">
-              <PanelErrorBoundary name="AI">
-                <AIPanel />
-              </PanelErrorBoundary>
-            </div>
-          )}
+          {/* Bottom toolbar above timeline */}
+          <div className="flex items-center" style={{ gridArea: "th" }}>
+            <BottomToolbar />
+          </div>
 
-          <div className="flex-1 min-h-0 flex">
-            <div className="flex-1 min-w-0 min-h-0">
-              <PanelErrorBoundary name="Timeline">
-                <Timeline />
-              </PanelErrorBoundary>
-            </div>
-
-            {keyframeEditorOpen && (
-              <div className="shrink-0 min-w-0 border-l border-border">
-                <PanelErrorBoundary name="Keyframe Editor">
-                  <KeyframeEditorPanel
-                    clip={selectedClip}
-                    onClose={() => setKeyframeEditorOpen(false)}
-                    onUpdateKeyframe={handleUpdateKeyframe}
-                    onDeleteKeyframe={handleDeleteKeyframe}
-                    onCopyKeyframes={handleCopyKeyframes}
-                    onPasteKeyframes={handlePasteKeyframes}
-                    selectedKeyframeIds={selectedKeyframeIds}
-                    onSelectKeyframe={handleSelectKeyframe}
-                    copiedKeyframes={copiedKeyframes}
+          {/* Timeline Area */}
+          <div
+            className="bg-tl-bg min-w-0 min-h-0 overflow-hidden flex flex-col rounded-xl border border-border shadow-sm"
+            style={{ gridArea: "timeline" }}
+          >
+            {panels.audioMixer?.visible && (
+              <div className="shrink-0 border-b border-border">
+                <PanelErrorBoundary name="Audio Mixer">
+                  <AudioMixer
+                    visible
+                    onClose={() => setPanelVisible("audioMixer", false)}
                   />
                 </PanelErrorBoundary>
               </div>
             )}
+
+            {panels.ai?.visible && (
+              <div className="shrink-0 border-b border-border">
+                <PanelErrorBoundary name="AI">
+                  <AIPanel />
+                </PanelErrorBoundary>
+              </div>
+            )}
+
+            <div className="flex-1 min-h-0 flex">
+              <div className="flex-1 min-w-0 min-h-0">
+                <PanelErrorBoundary name="Timeline">
+                  <Timeline />
+                </PanelErrorBoundary>
+              </div>
+
+              {keyframeEditorOpen && (
+                <div className="shrink-0 min-w-0 border-l border-border">
+                  <PanelErrorBoundary name="Keyframe Editor">
+                    <KeyframeEditorPanel
+                      clip={selectedClip}
+                      onClose={() => setKeyframeEditorOpen(false)}
+                      onUpdateKeyframe={handleUpdateKeyframe}
+                      onDeleteKeyframe={handleDeleteKeyframe}
+                      onCopyKeyframes={handleCopyKeyframes}
+                      onPasteKeyframes={handlePasteKeyframes}
+                      selectedKeyframeIds={selectedKeyframeIds}
+                      onSelectKeyframe={handleSelectKeyframe}
+                      copiedKeyframes={copiedKeyframes}
+                    />
+                  </PanelErrorBoundary>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       <KeyboardShortcutsOverlay
