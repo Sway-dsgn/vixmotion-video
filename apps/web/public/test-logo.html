@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head><title>Logo Test</title></head>
-<body style="background:#111;display:flex;align-items:center;justify-content:center;height:100vh;gap:20px;">
-  <img src="/vixmotion-logo.png" alt="logo" style="width:200px;height:200px;border:2px solid red;background:white;">
-  <div style="width:200px;height:200px;border:2px solid lime;background:currentColor;-webkit-mask:url(/vixmotion-logo.png) center/contain no-repeat;mask:url(/vixmotion-logo.png) center/contain no-repeat;color:#0ea5e9;"></div>
+<body style="background:#111;display:flex;align-items:center;justify-content:center;height:100vh;gap:20px;flex-wrap:wrap;">
+  <div>
+    <h2 style="color:white;">1. Direct img /vixmotion-logo.png</h2>
+    <img src="/vixmotion-logo.png" alt="logo" style="width:200px;height:200px;border:2px solid red;background:white;">
+  </div>
+  <div>
+    <h2 style="color:white;">2. CSS mask</h2>
+    <div style="width:200px;height:200px;border:2px solid lime;background:currentColor;-webkit-mask:url(/vixmotion-logo.png) center/contain no-repeat;mask:url(/vixmotion-logo.png) center/contain no-repeat;color:#0ea5e9;"></div>
+  </div>
+  <div>
+    <h2 style="color:white;">3. Inline data:image PNG</h2>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAWklEQVR4nO3ZsQ0AMAgAMf3/nh0CJ2CJgnsKAAAAAAB4Mrd3CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPBkBwgAAAAA8rR3CAAAAACAf3kDBwAAAPB3BwgAAAAA8rR3CAAAAACA4AMHsQIhLXO1VQAAAABJRU5ErkJggg==" alt="inline-png" style="width:200px;height:200px;border:2px solid yellow;">
+  </div>
 </body>
 </html>
