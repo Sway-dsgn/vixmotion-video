@@ -129,7 +129,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <Text type="body" color="primary" weight="bold" className="text-2xl text-text-primary">
                 Your Projects
               </Text>
-              <Text type="supporting" color="secondary" className="text-sm text-text-muted mt-2">
+              <Text type="supporting" color="secondary" className="text-sm text-text-muted mt-4">
                 Recent projects will appear here
               </Text>
             </div>
