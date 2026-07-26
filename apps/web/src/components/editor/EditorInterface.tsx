@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ToolcraftText as Text } from "@vixmotion/ui";
 
-import { Toolbar } from "./Toolbar";
-import { EditorActionRail } from "./EditorActionRail";
 import { Preview } from "./Preview";
 import { RightPanel } from "./RightPanel";
 import { LeftPanel } from "./LeftPanel";
