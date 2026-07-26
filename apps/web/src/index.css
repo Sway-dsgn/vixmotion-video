@@ -30,12 +30,13 @@
     --topbar-h: 40px;
     --toolnav-h: 64px;
 
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   /* light theme - VixMotion (sky blue brand accent, Inter) */
   :root,
   [data-theme="light"] {
+    color-scheme: light;
     --bg: #f4f4f6;            /* window / app background */
     --bg-1: #ffffff;          /* cards & elevated surfaces */
     --bg-2: #f0f0f3;          /* recessed insets, pills, search fields */
@@ -77,6 +78,7 @@
   /* dark theme - VixMotion, cinematic near-black */
   [data-theme="dark"],
   .dark {
+    color-scheme: dark;
     --bg: oklch(0.12 0.005 240);
     --bg-1: oklch(0.16 0.006 240);
     --bg-2: oklch(0.2 0.007 240);
@@ -128,18 +130,18 @@
     --card-foreground: 240 10% 4%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 4%;
-    --primary: 160 84% 39%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 5% 96%;
     --secondary-foreground: 240 6% 10%;
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
-    --accent-hsl: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
+    --accent-hsl: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --input: 240 6% 90%;
-    --ring: 160 84% 39%;
+    --ring: 199 89% 48%;
     --radius: 0.625rem;
   }
 
@@ -151,7 +153,7 @@
     --card-foreground: 0 0% 95%;
     --popover: 220 10% 13%;
     --popover-foreground: 0 0% 95%;
-    --primary: 158 64% 52%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 8% 18%;
     --secondary-foreground: 0 0% 95%;
@@ -162,7 +164,7 @@
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 95%;
     --input: 220 8% 24%;
-    --ring: 158 64% 52%;
+    --ring: 199 89% 48%;
   }
 
   html,

@@ -92,7 +92,7 @@ export function DesktopApp(): JSX.Element {
   }, []);
 
   return (
-    <div className="vixmotion-desktop isolate flex h-screen w-screen flex-col overflow-hidden bg-bg text-fg">
+    <div className="VixMotion-desktop isolate flex h-screen w-screen flex-col overflow-hidden bg-bg text-fg">
       <DesktopTitleBar platform={platform}>
         {hasProject && isVideoEditing ? <DesktopExportButton /> : null}
         <Button
