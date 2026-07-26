@@ -52,20 +52,20 @@ const MAX_TIMELINE_VH = 70;
 // Compact mode: timeline takes most of the height, leaving a small preview.
 const COMPACT_TIMELINE_VH = 75;
 
-const DEFAULT_MEDIA_W = 500;
-const MIN_MEDIA_W = 320;
-const MAX_MEDIA_W = 640;
+const DEFAULT_MEDIA_W = 320;
+const MIN_MEDIA_W = 260;
+const MAX_MEDIA_W = 400;
 
-const DEFAULT_INSPECTOR_W = 500;
-const MIN_INSPECTOR_W = 280;
-const MAX_INSPECTOR_W = 640;
+const DEFAULT_INSPECTOR_W = 320;
+const MIN_INSPECTOR_W = 260;
+const MAX_INSPECTOR_W = 400;
 
-const DEFAULT_CHAT_W = 380;
-const MIN_CHAT_W = 320;
-const MAX_CHAT_W = 560;
+const DEFAULT_CHAT_W = 320;
+const MIN_CHAT_W = 260;
+const MAX_CHAT_W = 400;
 
 const MIN_STAGE_W = 380;
-const RESIZE_HANDLE = 10;
+const RESIZE_HANDLE = 4;
 
 type ResizeTarget = "timeline" | "media" | "inspector" | "chat";
 
@@ -451,13 +451,13 @@ export const EditorInterface: React.FC = () => {
     : timelineVh;
   const gridStyle: React.CSSProperties = chatVisible
     ? {
-        gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px 1fr ${RESIZE_HANDLE}px ${inspectorWidth}px ${RESIZE_HANDLE}px ${chatWidth}px`,
+        gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px minmax(${MIN_STAGE_W}px, 1fr) ${RESIZE_HANDLE}px ${inspectorWidth}px ${RESIZE_HANDLE}px ${chatWidth}px`,
         gridTemplateRows: `1fr auto 6px ${effectiveTimelineVh}vh`,
         gridTemplateAreas:
           "'media mh stage ih inspector ch chat' 'th th th th th th th' 'tlr tlr tlr tlr tlr tlr tlr' 'timeline timeline timeline timeline timeline timeline timeline'",
       }
     : {
-        gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px 1fr ${RESIZE_HANDLE}px ${inspectorWidth}px`,
+        gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px minmax(${MIN_STAGE_W}px, 1fr) ${RESIZE_HANDLE}px ${inspectorWidth}px`,
         gridTemplateRows: `1fr auto 6px ${effectiveTimelineVh}vh`,
         gridTemplateAreas:
           "'media mh stage ih inspector' 'th th th th th' 'tlr tlr tlr tlr tlr' 'timeline timeline timeline timeline timeline'",
