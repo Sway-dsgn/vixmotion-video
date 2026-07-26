@@ -471,10 +471,10 @@ export const EditorInterface: React.FC = () => {
       <TopNavbar />
 
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 grid gap-0 bg-bg p-2.5" style={gridStyle}>
+        <div className="flex-1 min-h-0 grid gap-0 bg-bg p-2.5 overflow-hidden" style={gridStyle}>
           {/* Left Panel - Inspector */}
           <div
-            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
+            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm h-full"
             style={{ gridArea: "media" }}
           >
             <PanelErrorBoundary name="Inspector">
@@ -492,7 +492,7 @@ export const EditorInterface: React.FC = () => {
 
           {/* Center Stage - Preview */}
           <div
-            className="bg-stage-bg min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
+            className="bg-stage-bg min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm h-full"
             style={{ gridArea: "stage" }}
           >
             <PanelErrorBoundary name="Stage">
@@ -510,7 +510,7 @@ export const EditorInterface: React.FC = () => {
 
           {/* Right Panel - Assets */}
           <div
-            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm"
+            className="bg-bg-1 min-w-0 min-h-0 overflow-hidden rounded-xl border border-border shadow-sm h-full"
             style={{ gridArea: "inspector" }}
           >
             <PanelErrorBoundary name="Assets">

@@ -25,7 +25,7 @@ export const LeftPanel: React.FC = () => {
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center bg-[#141414] p-8"
+      className="h-full w-full flex flex-col items-center justify-center bg-[#141414] p-8 overflow-hidden"
     >
       <div className="text-center max-w-sm flex flex-col items-center">
         <div
