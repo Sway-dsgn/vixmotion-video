@@ -28,7 +28,7 @@ export const BottomToolbar: React.FC = () => {
   const tools = [
     { icon: Scissors, label: "Cut", shortcut: "C", onClick: () => {} },
     { icon: AlignLeft, label: "Align", shortcut: "A", onClick: () => {} },
-    { icon: AlignBottom, label: "Dock", shortcut: "D", onClick: () => {} },
+    { icon: PanelBottom, label: "Dock", shortcut: "D", onClick: () => {} },
     { icon: Link2, label: "Link", shortcut: "L", onClick: () => {} },
     { icon: Copy, label: "Duplicate", shortcut: "Ctrl+D", onClick: () => {} },
     { icon: Snowflake, label: "Freeze", shortcut: "F", onClick: () => {} },
