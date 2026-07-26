@@ -46,11 +46,11 @@ const ChatPanel = React.lazy(() =>
 // top workspace (media | stage | inspector) gets the rest. The grid
 // from the mockup is `1fr var(--tl-height)` rows â€” by default
 // timeline is 58vh which leaves the top row with ~38â€“42vh of stage.
-const DEFAULT_TIMELINE_VH = 42;
-const MIN_TIMELINE_VH = 22;
+const DEFAULT_TIMELINE_VH = 35;
+const MIN_TIMELINE_VH = 18;
 const MAX_TIMELINE_VH = 70;
 // Compact mode: timeline takes most of the height, leaving a small preview.
-const COMPACT_TIMELINE_VH = 80;
+const COMPACT_TIMELINE_VH = 75;
 
 const DEFAULT_MEDIA_W = 500;
 const MIN_MEDIA_W = 320;
@@ -452,15 +452,15 @@ export const EditorInterface: React.FC = () => {
   const gridStyle: React.CSSProperties = chatVisible
     ? {
         gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px 1fr ${RESIZE_HANDLE}px ${inspectorWidth}px ${RESIZE_HANDLE}px ${chatWidth}px`,
-        gridTemplateRows: `1fr auto ${effectiveTimelineVh}vh`,
+        gridTemplateRows: `1fr auto 6px ${effectiveTimelineVh}vh`,
         gridTemplateAreas:
-          "'media mh stage ih inspector ch chat' 'th th th th th th th' 'timeline timeline timeline timeline timeline timeline timeline'",
+          "'media mh stage ih inspector ch chat' 'th th th th th th th' 'tlr tlr tlr tlr tlr tlr tlr' 'timeline timeline timeline timeline timeline timeline timeline'",
       }
     : {
         gridTemplateColumns: `${mediaWidth}px ${RESIZE_HANDLE}px 1fr ${RESIZE_HANDLE}px ${inspectorWidth}px`,
-        gridTemplateRows: `1fr auto ${effectiveTimelineVh}vh`,
+        gridTemplateRows: `1fr auto 6px ${effectiveTimelineVh}vh`,
         gridTemplateAreas:
-          "'media mh stage ih inspector' 'th th th th th' 'timeline timeline timeline timeline timeline'",
+          "'media mh stage ih inspector' 'th th th th th' 'tlr tlr tlr tlr tlr' 'timeline timeline timeline timeline timeline'",
       };
 
   return (
@@ -552,6 +552,14 @@ export const EditorInterface: React.FC = () => {
           {/* Bottom toolbar above timeline */}
           <div className="flex items-center" style={{ gridArea: "th" }}>
             <BottomToolbar />
+          </div>
+
+          {/* Timeline resize handle */}
+          <div
+            className="h-1.5 cursor-row-resize group/tl flex items-center justify-center hover:bg-accent/10 transition-colors shrink-0"
+            onMouseDown={beginResize("timeline")}
+          >
+            <span className="w-10 h-1 rounded-full bg-white/10 group-hover/tl:bg-accent/40 transition-colors" />
           </div>
 
           {/* Timeline Area */}
