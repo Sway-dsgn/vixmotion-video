@@ -6,13 +6,15 @@ import {
   Sparkles,
   Smile,
   PenTool,
-  Expand,
   Subtitles,
   SlidersHorizontal,
   Settings,
   GripVertical,
+  Eye,
+  EyeOff,
 } from "@/icons/lucide-compat";
 import { useUIStore } from "../../stores/ui-store";
+import { useProjectStore } from "../../stores/project-store";
 
 interface FloatingToolbarProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -25,9 +27,11 @@ interface ToolDef {
 }
 
 export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ containerRef }) => {
-  const { openModal, togglePanel } = useUIStore();
+  const { togglePanel, panels } = useUIStore();
+  const { importMedia } = useProjectStore();
 
   const [position, setPosition] = useState({ x: 16, y: 16 });
+  const [isVisible, setIsVisible] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const hasDragged = useRef(false);
@@ -88,18 +92,29 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ containerRef }
     };
   }, [isDragging, clampPosition]);
 
+  const handleImport = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "video/*,image/*,audio/*";
+    input.multiple = true;
+    input.onchange = async () => {
+      const files = Array.from(input.files || []);
+      for (const file of files) {
+        try {
+          await importMedia(file);
+        } catch (err) {
+          console.error("Import failed:", err);
+        }
+      }
+    };
+    input.click();
+  }, [importMedia]);
+
   const tools: ToolDef[] = [
     {
       icon: FolderOpen,
       label: "Import media",
-      onClick: () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "video/*,image/*,audio/*";
-        input.multiple = true;
-        input.onchange = () => input.click();
-        input.click();
-      },
+      onClick: handleImport,
     },
     {
       icon: Headphones,
@@ -109,27 +124,17 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ containerRef }
     {
       icon: Type,
       label: "Add text",
-      onClick: () => openModal("addText"),
+      onClick: () => togglePanel("effects"),
     },
     {
       icon: Sparkles,
-      label: "Effects",
-      onClick: () => openModal("effects"),
+      label: "AI Editor",
+      onClick: () => togglePanel("agentChat"),
     },
     {
       icon: Smile,
-      label: "Stickers",
-      onClick: () => openModal("stickers"),
-    },
-    {
-      icon: PenTool,
-      label: "Draw",
-      onClick: () => openModal("draw"),
-    },
-    {
-      icon: Expand,
-      label: "More tools",
-      onClick: () => openModal("moreTools"),
+      label: "AI Panel",
+      onClick: () => togglePanel("ai"),
     },
     {
       icon: Subtitles,
@@ -137,16 +142,37 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ containerRef }
       onClick: () => togglePanel("subtitles"),
     },
     {
+      icon: PenTool,
+      label: "Color Grading",
+      onClick: () => togglePanel("colorGrading"),
+    },
+    {
       icon: SlidersHorizontal,
-      label: "Adjustments",
-      onClick: () => openModal("adjustments"),
+      label: "Inspector",
+      onClick: () => togglePanel("inspector"),
     },
     {
       icon: Settings,
       label: "Settings",
-      onClick: () => openModal("settings"),
+      onClick: () => {},
     },
   ];
+
+  if (!isVisible) {
+    return (
+      <button
+        onClick={() => setIsVisible(true)}
+        className="absolute z-30 top-2 left-2 p-2 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+        style={{
+          background: "rgba(0,0,0,0.7)",
+          backdropFilter: "blur(8px)",
+        }}
+        aria-label="Show toolbar"
+      >
+        <Eye size={16} className="text-white/70" />
+      </button>
+    );
+  }
 
   return (
     <div
@@ -167,30 +193,53 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({ containerRef }
         {/* Drag handle */}
         <div
           onMouseDown={handleMouseDown}
-          className="w-8 h-6 flex items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-white/10 transition-colors mb-1"
+          className="w-8 h-6 flex items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-white/10 transition-colors"
           aria-label="Drag toolbar"
         >
           <GripVertical size={14} className="text-white/40" />
         </div>
 
-        <div className="w-6 h-px bg-white/10 mb-1" />
+        <div className="w-6 h-px bg-white/10" />
 
         {/* Tool buttons */}
-        {tools.map((tool) => (
-          <button
-            key={tool.label}
-            onClick={() => {
-              if (!hasDragged.current) {
-                tool.onClick();
-              }
-            }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label={tool.label}
-            title={tool.label}
-          >
-            <tool.icon size={16} />
-          </button>
-        ))}
+        {tools.map((tool) => {
+          const isActive =
+            (tool.label === "Audio mixer" && panels.audioMixer?.visible) ||
+            (tool.label === "AI Editor" && panels.agentChat?.visible) ||
+            (tool.label === "AI Panel" && panels.ai?.visible);
+
+          return (
+            <button
+              key={tool.label}
+              onClick={() => {
+                if (!hasDragged.current) {
+                  tool.onClick();
+                }
+              }}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                isActive
+                  ? "bg-accent text-white"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
+              }`}
+              aria-label={tool.label}
+              title={tool.label}
+            >
+              <tool.icon size={16} />
+            </button>
+          );
+        })}
+
+        <div className="w-6 h-px bg-white/10" />
+
+        {/* Hide button */}
+        <button
+          onClick={() => setIsVisible(false)}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-white/40 hover:text-white/70 hover:bg-white/10 transition-colors"
+          aria-label="Hide toolbar"
+          title="Hide toolbar"
+        >
+          <EyeOff size={14} />
+        </button>
       </div>
     </div>
   );
