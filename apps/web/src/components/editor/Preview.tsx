@@ -7659,8 +7659,8 @@ export const Preview: React.FC = () => {
     >
       {/* â”€â”€ Panel bar header (mockup: 'Player') â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {!isMaximized && !isFullscreen && (
-        <div className="flex items-center px-3.5 py-2 border-b border-border bg-bg-1 gap-2.5 min-h-[38px] shrink-0">
-          <Text type="label" color="primary" weight="semibold" className="text-[13px] tracking-tight text-fg m-0">Player</Text>
+        <div className="flex items-center px-3.5 py-1 border-b border-border bg-bg-1 gap-2.5 min-h-[28px] shrink-0">
+          <Text type="label" color="primary" weight="semibold" className="text-[12px] tracking-tight text-fg m-0">Player</Text>
           <div className="ml-auto flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-accent" title="Live preview" />
           </div>
@@ -8147,11 +8147,6 @@ export const Preview: React.FC = () => {
               );
             })}
         </div>
-
-        {/* Floating Toolbar */}
-        {!cropMode && !isPlaying && (
-          <FloatingToolbar containerRef={videoAreaRef} />
-        )}
       </div>
 
       {/* Player Controls with integrated Scrub Bar */}
@@ -8447,6 +8442,11 @@ export const Preview: React.FC = () => {
         </div>
         </div>
       </div>
+
+      {/* Floating Toolbar - positioned relative to full preview container */}
+      {!cropMode && !isPlaying && (
+        <FloatingToolbar containerRef={containerRef} />
+      )}
     </div>
   );
 };
