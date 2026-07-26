@@ -6,7 +6,10 @@ import { MobileBlocker } from "./components/MobileBlocker";
 import { WelcomeScreen } from "./components/welcome";
 import { RecoveryDialog } from "./components/welcome/RecoveryDialog";
 import { SharePage } from "./pages/SharePage";
+import { LoginPage } from "./components/auth/LoginPage";
+import { HomePage } from "./components/home/HomePage";
 import { useUIStore } from "./stores/ui-store";
+import { useAuthStore } from "./stores/auth-store";
 import { useProjectStore } from "./stores/project-store";
 import { useRouter } from "./hooks/use-router";
 import { useProjectRecovery } from "./hooks/useProjectRecovery";
@@ -45,6 +48,7 @@ function App() {
   const { activeModal, closeModal, skipWelcomeScreen } = useUIStore();
   const { openModal: openSearchModal } = useUIStore();
   const createNewProject = useProjectStore((state) => state.createNewProject);
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const { showDialog, availableSaves, recover, dismiss, clearAll } = useProjectRecovery();
 
   const { route, params, navigate, parsedDimensions, fps } = useRouter();
@@ -106,6 +110,8 @@ function App() {
       hasHandledInitialRoute.current = true;
     } else if (["welcome", "templates", "recent"].includes(route)) {
       hasHandledInitialRoute.current = true;
+    } else if (route === "login" || route === "home") {
+      hasHandledInitialRoute.current = true;
     }
   }, [
     route,
@@ -155,6 +161,10 @@ function App() {
         </Suspense>
       ) : isSharePage ? (
         <SharePage shareId={params.shareId!} />
+      ) : route === "login" || (!isLoggedIn && ["welcome", "home"].includes(route)) ? (
+        <LoginPage onLogin={() => navigate("home")} />
+      ) : route === "home" || (isLoggedIn && route === "welcome") ? (
+        <HomePage onNavigate={(r) => navigate(r)} />
       ) : showWelcome ? (
         <WelcomeScreen initialTab={initialTab} />
       ) : (
