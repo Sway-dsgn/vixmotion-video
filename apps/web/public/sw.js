@@ -10,9 +10,9 @@
  * - 35.4: Inform user that AI requires internet connectivity
  */
 
-const CACHE_NAME = "vixmotion-v2";
-const STATIC_CACHE_NAME = "vixmotion-static-v2";
-const DYNAMIC_CACHE_NAME = "vixmotion-dynamic-v2";
+const CACHE_NAME = "vixmotion-v3";
+const STATIC_CACHE_NAME = "vixmotion-static-v3";
+const DYNAMIC_CACHE_NAME = "vixmotion-dynamic-v3";
 
 /**
  * Static assets to cache on install
