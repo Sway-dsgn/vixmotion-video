@@ -501,6 +501,9 @@ class ProjectManager {
   async openRecentProject(
     recentProject: RecentProject,
   ): Promise<Project | null> {
+    if (!this.db) {
+      await this.initialize();
+    }
     if (recentProject.fileHandle) {
       if (isNativeRef(recentProject.fileHandle)) {
         try {
@@ -599,6 +602,9 @@ class ProjectManager {
     project: Project,
     fileHandle?: ProjectFileRef,
   ): Promise<void> {
+    if (!this.db) {
+      await this.initialize();
+    }
     if (!this.db) return;
 
     const recentProject: RecentProject = {
@@ -611,9 +617,9 @@ class ProjectManager {
     };
 
     return new Promise((resolve) => {
-      const tx = this.db!.transaction(RECENT_STORE, "readwrite");
-      const store = tx.objectStore(RECENT_STORE);
-      store.put(recentProject);
+      const tx = this.db!.transaction([PROJECTS_STORE, RECENT_STORE], "readwrite");
+      tx.objectStore(PROJECTS_STORE).put(project);
+      tx.objectStore(RECENT_STORE).put(recentProject);
 
       tx.oncomplete = () => {
         this.emit("recentUpdated");
