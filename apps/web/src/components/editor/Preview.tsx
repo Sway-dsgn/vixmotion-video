@@ -1320,15 +1320,9 @@ export const Preview: React.FC = () => {
     }
 
     const aspectRatio = settings.width / settings.height;
-    // Fill the available preview area (minus a small margin) while preserving
-    // the project aspect ratio, instead of capping at a fixed small size which
-    // left the monitor floating in unused space on larger screens.
-    const PREVIEW_PADDING = 24;
-    const availableWidth = Math.max(1, videoAreaSize.width - PREVIEW_PADDING * 2);
-    const availableHeight = Math.max(
-      1,
-      videoAreaSize.height - PREVIEW_PADDING * 2,
-    );
+    // Use full available space while preserving project aspect ratio
+    const availableWidth = Math.max(1, videoAreaSize.width);
+    const availableHeight = Math.max(1, videoAreaSize.height);
 
     let width = availableWidth;
     let height = width / aspectRatio;
@@ -7690,7 +7684,7 @@ export const Preview: React.FC = () => {
       <div
         ref={videoAreaRef}
         className={`flex-1 min-h-0 min-w-0 relative flex items-center justify-center bg-bg-1 transition-all duration-300 ${
-          isMaximized || isFullscreen ? "p-0" : "p-[18px]"
+          isMaximized || isFullscreen ? "p-0" : "p-0"
         } ${zoomLevel > 1 ? "overflow-auto" : ""}`}
         onMouseMove={interactionMode !== "none" ? handleMouseMove : undefined}
         onMouseUp={handleMouseUp}
