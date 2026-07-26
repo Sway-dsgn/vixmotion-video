@@ -1,4 +1,3 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#0ea5e9"/>
-  <path d="M20 18 L32 48 L44 18" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <image href="/vixmotion-logo.png" width="64" height="64"/>
 </svg>

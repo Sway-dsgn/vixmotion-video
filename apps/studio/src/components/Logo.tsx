@@ -1,7 +1,7 @@
 ﻿export function Logo({ className = "", size }: { className?: string; size?: number }) {
   return (
     <img
-      src="/logo-icon.png"
+      src="/vixmotion-logo.png"
       alt="VixMotion"
       className={className}
       width={size}

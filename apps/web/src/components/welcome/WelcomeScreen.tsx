@@ -63,7 +63,7 @@ const FORMAT_OPTIONS: FormatOption[] = [
 ];
 
 const VixMotionLogo: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <img src="/vixmotion%20no%20teks.png" alt="VixMotion" className={className} />
+  <img src="/vixmotion-logo.png" alt="VixMotion" className={className} />
 );
 
 type ViewMode = "home" | "templates" | "recent";
