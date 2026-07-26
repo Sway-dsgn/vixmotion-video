@@ -5,7 +5,7 @@ import type { RecentProject } from "../../services/project-manager";
 import { useProjectStore } from "../../stores/project-store";
 import { ToolcraftButton as Button } from "@vixmotion/ui";
 import { ToolcraftText as Text } from "@vixmotion/ui";
-import { Plus, Film, Clock, LogOut, Trash2 } from "@/icons/lucide-compat";
+import { Plus, Film, Clock, LogOut } from "@/icons/lucide-compat";
 
 interface HomePageProps {
   onNavigate: (route: "editor" | "login" | "home") => void;
