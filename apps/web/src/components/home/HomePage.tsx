@@ -87,14 +87,14 @@ export function HomePage({ onNavigate }: HomePageProps) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,197,94,0.03),transparent_60%)]" />
 
       <header className="relative flex items-center justify-between px-8 py-4 border-b border-border">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Text type="body" color="primary" weight="bold" className="text-sm text-primary">V</Text>
           </div>
           <Text type="body" color="primary" weight="semibold" className="text-base text-text-primary">VixMotion</Text>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             label="New project"
             variant="primary"
@@ -102,8 +102,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
             icon={<Plus size={14} />}
             onClick={handleCreateProject}
           />
-          <div className="flex items-center gap-2 pl-3 border-l border-border">
-            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
+          <div className="flex items-center gap-2 pl-2 border-l border-border">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
               <Text type="supporting" color="primary" weight="semibold" className="text-xs text-primary">
                 {username?.charAt(0)?.toUpperCase() || "?"}
               </Text>
@@ -129,7 +129,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
               <Text type="body" color="primary" weight="bold" className="text-2xl text-text-primary">
                 Your Projects
               </Text>
-              <Text type="supporting" color="secondary" className="text-sm text-text-muted mt-1">
+              <Text type="supporting" color="secondary" className="text-sm text-text-muted mt-2">
                 Recent projects will appear here
               </Text>
             </div>
@@ -144,7 +144,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </div>
           ) : projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24">
-              <div className="w-16 h-16 rounded-2xl bg-background-tertiary flex items-center justify-center mb-5">
+              <div className="w-16 h-16 rounded-2xl bg-background-tertiary flex items-center justify-center mb-4">
                 <Film size={28} className="text-text-muted" />
               </div>
               <Text type="body" color="primary" weight="medium" className="text-lg text-text-primary mb-2">
@@ -188,11 +188,11 @@ export function HomePage({ onNavigate }: HomePageProps) {
                         <Film size={28} className="text-text-muted/50 group-hover:text-primary/50 transition-colors" />
                       )}
                     </div>
-                    <div className="p-3 flex-1">
+                    <div className="p-4 flex-1">
                       <Text type="supporting" color="primary" weight="medium" className="text-sm text-text-primary truncate group-hover:text-primary transition-colors">
                         {project.name}
                       </Text>
-                      <div className="flex items-center gap-1.5 mt-1.5 text-xs text-text-muted">
+                      <div className="flex items-center gap-2 mt-2 text-xs text-text-muted">
                         <Clock size={11} />
                         <span>{formatDate(project.lastOpened)}</span>
                       </div>
