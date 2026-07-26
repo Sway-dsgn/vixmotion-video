@@ -92,6 +92,7 @@ import {
 } from "./preview/index";
 import { snapCanvasPosition } from "./preview/canvas-snapping";
 import { ProcessingOverlay } from "./ProcessingOverlay";
+import { FloatingToolbar } from "./FloatingToolbar";
 import {
   getPersonSegmentationEngine,
   getBackgroundRemovalEngine,
@@ -8146,6 +8147,11 @@ export const Preview: React.FC = () => {
               );
             })}
         </div>
+
+        {/* Floating Toolbar */}
+        {!cropMode && !isPlaying && (
+          <FloatingToolbar containerRef={videoAreaRef} />
+        )}
       </div>
 
       {/* Player Controls with integrated Scrub Bar */}
