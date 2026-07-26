@@ -63,7 +63,16 @@ const FORMAT_OPTIONS: FormatOption[] = [
 ];
 
 const VixMotionLogo: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <img src="/vixmotion-logo.png" alt="VixMotion" className={className} />
+  <div
+    className={className}
+    aria-label="VixMotion"
+    role="img"
+    style={{
+      backgroundColor: "currentColor",
+      mask: "url(/vixmotion-logo.png) center/contain no-repeat",
+      WebkitMask: "url(/vixmotion-logo.png) center/contain no-repeat",
+    }}
+  />
 );
 
 type ViewMode = "home" | "templates" | "recent";

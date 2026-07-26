@@ -1,11 +1,19 @@
 ﻿export function Logo({ className = "", size }: { className?: string; size?: number }) {
+  const style: React.CSSProperties = {
+    backgroundColor: "currentColor",
+    mask: "url(/vixmotion-logo.png) center/contain no-repeat",
+    WebkitMask: "url(/vixmotion-logo.png) center/contain no-repeat",
+  };
+  if (size) {
+    style.width = size;
+    style.height = size;
+  }
   return (
-    <img
-      src="/vixmotion-logo.png"
-      alt="VixMotion"
+    <div
       className={className}
-      width={size}
-      height={size}
+      aria-label="VixMotion"
+      role="img"
+      style={style}
     />
   );
 }
