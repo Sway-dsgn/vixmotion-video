@@ -360,11 +360,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     }
 
     if (query.trim()) {
-      const searchTerms = query.toLowerCase().split(" ");
+      const normalize = (s: string) =>
+        s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const searchTerms = normalize(query).split(" ");
       effects = effects.filter((e) => {
-        const searchText = [e.name, e.description, ...e.keywords, e.category]
-          .join(" ")
-          .toLowerCase();
+        const searchText = normalize(
+          [e.name, e.description, ...e.keywords, e.category].join(" "),
+        );
         return searchTerms.every((term) => searchText.includes(term));
       });
     }
