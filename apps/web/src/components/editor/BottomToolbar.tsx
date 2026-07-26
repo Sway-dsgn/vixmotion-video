@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Sparkles,
   Layers,
@@ -15,20 +15,10 @@ import {
   Unlock,
   Maximize2,
   Minimize2,
-  ZoomIn,
-  ZoomOut,
-  Undo2,
-  Redo2,
-  CornerDownLeft,
-  CornerDownRight,
   Plus,
-  Magnet,
-  Grid3x3,
-  SplitSquareHorizontal,
-  Monitor,
 } from "@/icons/lucide-compat";
 import { useUIStore } from "../../stores/ui-store";
-import { useTimelineStore, ZOOM_PRESETS } from "../../stores/timeline-store";
+import { useTimelineStore } from "../../stores/timeline-store";
 import { useProjectStore } from "../../stores/project-store";
 import { useRouter } from "../../hooks/use-router";
 import { toast } from "../../stores/notification-store";
@@ -41,64 +31,13 @@ export const BottomToolbar: React.FC = () => {
     panels,
     getSelectedClipIds,
   } = useUIStore();
-  const {
-    pixelsPerSecond,
-    zoomIn,
-    zoomOut,
-    setZoom,
-    playheadPosition,
-  } = useTimelineStore();
+  const { playheadPosition } = useTimelineStore();
   const { createMotionComposition, splitClip, removeClip, duplicateClip } = useProjectStore();
   const { navigate } = useRouter();
 
   const [isLocked, setIsLocked] = useState(false);
   const [isCreatingMotion, setIsCreatingMotion] = useState(false);
   const [showSceneMenu, setShowSceneMenu] = useState(false);
-  const [showZoomMenu, setShowZoomMenu] = useState(false);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const isDraggingSlider = useRef(false);
-
-  const zoomPercent = Math.round((pixelsPerSecond / ZOOM_PRESETS.DEFAULT) * 100);
-  const zoomMin = ZOOM_PRESETS.MIN;
-  const zoomMax = ZOOM_PRESETS.MAX;
-
-  const handleSliderDrag = useCallback(
-    (e: MouseEvent) => {
-      if (!sliderRef.current || !isDraggingSlider.current) return;
-      const rect = sliderRef.current.getBoundingClientRect();
-      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      setZoom(Math.round(zoomMin + ratio * (zoomMax - zoomMin)));
-    },
-    [setZoom, zoomMin, zoomMax],
-  );
-
-  const handleSliderUp = useCallback(() => {
-    isDraggingSlider.current = false;
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
-    window.removeEventListener("mousemove", handleSliderDrag);
-    window.removeEventListener("mouseup", handleSliderUp);
-  }, [handleSliderDrag]);
-
-  const handleSliderDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      isDraggingSlider.current = true;
-      document.body.style.cursor = "ew-resize";
-      document.body.style.userSelect = "none";
-      handleSliderDrag(e as unknown as MouseEvent);
-      window.addEventListener("mousemove", handleSliderDrag);
-      window.addEventListener("mouseup", handleSliderUp);
-    },
-    [handleSliderDrag, handleSliderUp],
-  );
-
-  useEffect(() => {
-    return () => {
-      window.removeEventListener("mousemove", handleSliderDrag);
-      window.removeEventListener("mouseup", handleSliderUp);
-    };
-  }, [handleSliderDrag, handleSliderUp]);
 
   const handleCreateMotion = useCallback(async () => {
     if (isCreatingMotion) return;
@@ -135,8 +74,6 @@ export const BottomToolbar: React.FC = () => {
         toast.info(action, "Feature coming soon");
     }
   }, [getSelectedClipIds, splitClip, removeClip, duplicateClip, playheadPosition]);
-
-  const zoomPresets = [25, 50, 100, 150, 200, 300, 400];
 
   return (
     <div className="bg-[#0a0a0a] flex flex-col select-none shrink-0">
@@ -217,80 +154,6 @@ export const BottomToolbar: React.FC = () => {
           label={timelineMaximized ? "Restore" : "Maximize"}
           onClick={toggleTimelineMaximized}
         />
-      </div>
-
-      {/* ===== ROW 2: Undo/Redo + Track Controls + Zoom ===== */}
-      <div
-        className="flex items-center justify-between px-4 shrink-0"
-        style={{ height: "44px" }}
-      >
-        {/* Left side: undo/redo + track tools */}
-        <div className="flex items-center gap-1">
-          <ToolBtn icon={<Undo2 size={16} />} label="Undo" onClick={() => {}} />
-          <ToolBtn icon={<Redo2 size={16} />} label="Redo" onClick={() => {}} />
-          <Divider />
-          <ToolBtn icon={<Scissors size={16} />} label="Trim start" onClick={() => handleEditAction("trimStart")} />
-          <ToolBtn icon={<CornerDownLeft size={16} />} label="Trim to playhead" onClick={() => handleEditAction("trimStart")} />
-          <ToolBtn icon={<CornerDownRight size={16} />} label="Trim end" onClick={() => handleEditAction("trimEnd")} />
-          <ToolBtn icon={<Trash2 size={16} />} label="Ripple delete" onClick={() => handleEditAction("delete")} />
-          <Divider />
-          <button className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors text-[12px]">
-            <Plus size={14} />
-            Add track
-          </button>
-          <ToolBtn icon={<Layers size={16} />} label="Track layers" onClick={() => togglePanel("audioMixer")} />
-        </div>
-
-        {/* Right side: zoom + view controls */}
-        <div className="flex items-center gap-1">
-          <ToolBtn icon={<ZoomOut size={16} />} label="Zoom out" onClick={zoomOut} />
-          <div className="relative">
-            <button
-              onClick={() => setShowZoomMenu(!showZoomMenu)}
-              className="flex items-center px-2 py-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors text-[11px] font-mono tabular-nums min-w-[50px] justify-center"
-            >
-              {zoomPercent}%
-            </button>
-            {showZoomMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowZoomMenu(false)} />
-                <div className="absolute bottom-full mb-2 right-0 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 z-50 min-w-[80px]">
-                  {zoomPresets.map((z) => (
-                    <button
-                      key={z}
-                      onClick={() => { setZoom((z / 100) * ZOOM_PRESETS.DEFAULT); setShowZoomMenu(false); }}
-                      className={`w-full px-3 py-1.5 text-left text-[11px] font-mono hover:bg-white/5 transition-colors ${
-                        Math.abs(pixelsPerSecond - (z / 100) * ZOOM_PRESETS.DEFAULT) < 1 ? "text-accent" : "text-white/60"
-                      }`}
-                    >
-                      {z}%
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-          <div
-            ref={sliderRef}
-            onMouseDown={handleSliderDown}
-            className="w-20 h-1.5 bg-white/10 rounded-full relative cursor-ew-resize hover:h-2 transition-all mx-1"
-          >
-            <div
-              className="absolute top-1/2 -translate-y-1/2 left-0 bg-accent rounded-full h-full"
-              style={{ width: `${((pixelsPerSecond - zoomMin) / (zoomMax - zoomMin)) * 100}%` }}
-            />
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md border border-black/20"
-              style={{ left: `calc(${((pixelsPerSecond - zoomMin) / (zoomMax - zoomMin)) * 100}% - 6px)` }}
-            />
-          </div>
-          <ToolBtn icon={<ZoomIn size={16} />} label="Zoom in" onClick={zoomIn} />
-          <Divider />
-          <ToolBtn icon={<Magnet size={16} />} label="Snap" onClick={() => {}} />
-          <ToolBtn icon={<Grid3x3 size={16} />} label="Grid" onClick={() => {}} />
-          <ToolBtn icon={<SplitSquareHorizontal size={16} />} label="Split view" onClick={() => {}} />
-          <ToolBtn icon={<Monitor size={16} />} label="Fullscreen" onClick={() => {}} />
-        </div>
       </div>
     </div>
   );
