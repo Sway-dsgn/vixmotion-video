@@ -6,13 +6,12 @@ import { ToolcraftText as Text } from "@vixmotion/ui";
 
 export function LoginPage({ onLogin }: { onLogin?: () => void }) {
   const login = useAuthStore((s) => s.login);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
-    login(name.trim(), email.trim());
+    if (!username.trim()) return;
+    login(username.trim());
     onLogin?.();
   };
 
@@ -31,30 +30,23 @@ export function LoginPage({ onLogin }: { onLogin?: () => void }) {
             Welcome to VixMotion
           </Text>
           <Text type="supporting" color="secondary" className="text-sm text-text-muted">
-            Sign in to start creating
+            Enter your username to get started
           </Text>
         </div>
 
         <div className="space-y-4">
           <Input
-            label="Name"
-            placeholder="Your name"
-            value={name}
-            onChange={setName}
-          />
-          <Input
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={setEmail}
+            label="Username"
+            placeholder="Your username"
+            value={username}
+            onChange={setUsername}
           />
           <Button
             label="Sign in"
             variant="primary"
             type="submit"
             className="w-full mt-2"
-            isDisabled={!name.trim() || !email.trim()}
+            isDisabled={!username.trim()}
           />
         </div>
       </form>

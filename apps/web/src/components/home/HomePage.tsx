@@ -12,10 +12,9 @@ interface HomePageProps {
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
-  const user = useAuthStore((s) => s.user);
+  const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
-  const createNewProject = useProjectStore((s) => s.createNewProject);
-  const loadProject = useProjectStore((s) => s.loadProject);
+  const loadProjectIntoStore = useProjectStore((s) => s.loadProject);
 
   const [projects, setProjects] = useState<RecentProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,10 +36,15 @@ export function HomePage({ onNavigate }: HomePageProps) {
     loadProjects();
   }, [loadProjects]);
 
-  const handleCreateProject = useCallback(() => {
-    createNewProject("New Project", { width: 1920, height: 1080, frameRate: 30 });
+  const handleCreateProject = useCallback(async () => {
+    const project = await projectManager.createProject({
+      name: "New Project",
+      settings: { width: 1920, height: 1080, frameRate: 30 },
+    });
+    await projectManager.addToRecent(project);
+    loadProjectIntoStore(project);
     onNavigate("editor");
-  }, [createNewProject, onNavigate]);
+  }, [loadProjectIntoStore, onNavigate]);
 
   const handleOpenProject = useCallback(
     async (project: RecentProject) => {
@@ -48,7 +52,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
       try {
         const loaded = await projectManager.openRecentProject(project);
         if (loaded) {
-          loadProject(loaded);
+          loadProjectIntoStore(loaded);
           onNavigate("editor");
         }
       } catch (e) {
@@ -57,7 +61,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
         setLoadingProjectId(null);
       }
     },
-    [loadProject, onNavigate],
+    [loadProjectIntoStore, onNavigate],
   );
 
   const handleLogout = useCallback(() => {
@@ -101,12 +105,11 @@ export function HomePage({ onNavigate }: HomePageProps) {
           <div className="flex items-center gap-2 pl-3 border-l border-border">
             <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
               <Text type="supporting" color="primary" weight="semibold" className="text-xs text-primary">
-                {user?.name?.charAt(0)?.toUpperCase() || "?"}
+                {username?.charAt(0)?.toUpperCase() || "?"}
               </Text>
             </div>
             <div className="hidden sm:block">
-              <Text type="supporting" color="primary" weight="medium" className="text-xs text-text-primary">{user?.name}</Text>
-              <Text type="supporting" color="secondary" className="text-[10px] text-text-muted">{user?.email}</Text>
+              <Text type="supporting" color="primary" weight="medium" className="text-xs text-text-primary">{username}</Text>
             </div>
             <Button
               label="Sign out"
