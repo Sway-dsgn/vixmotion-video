@@ -16,33 +16,23 @@ import {
 import { useUIStore } from "../../stores/ui-store";
 import { useProjectStore } from "../../stores/project-store";
 
-interface FloatingToolbarProps {
-  containerRef?: React.RefObject<HTMLDivElement | null>;
-}
-
-export const FloatingToolbar: React.FC<FloatingToolbarProps> = () => {
+export const FloatingToolbar: React.FC = () => {
   const { togglePanel, panels } = useUIStore();
   const { importMedia } = useProjectStore();
 
-  const [pos, setPos] = useState({ x: 20, y: 20 });
+  const [pos, setPos] = useState({ x: 60, y: 40 });
   const [visible, setVisible] = useState(true);
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number; moved: boolean } | null>(null);
 
-  // Global drag listeners
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!dragRef.current) return;
       dragRef.current.moved = true;
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
-      const newX = dragRef.current.origX + dx;
-      const newY = dragRef.current.origY + dy;
-      // Clamp within viewport
-      const maxX = window.innerWidth - 48;
-      const maxY = window.innerHeight - 50;
       setPos({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY)),
+        x: Math.max(0, Math.min(dragRef.current.origX + dx, window.innerWidth - 50)),
+        y: Math.max(0, Math.min(dragRef.current.origY + dy, window.innerHeight - 50)),
       });
     };
     const onUp = () => {
@@ -67,7 +57,6 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = () => {
   };
 
   const onToolClick = (action: () => void) => {
-    // Only fire if we didn't drag
     if (dragRef.current?.moved) return;
     action();
   };
@@ -88,7 +77,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = () => {
   const isActive = (panelId: string) => Boolean(panels[panelId as keyof typeof panels]?.visible);
 
   const tools = [
-    { icon: FolderOpen, label: "Import", active: false, action: handleImport },
+    { icon: FolderOpen, label: "Import", action: handleImport },
     { icon: Headphones, label: "Audio", panel: "audioMixer" },
     { icon: Type, label: "Text", panel: "effects" },
     { icon: Sparkles, label: "AI Chat", panel: "agentChat" },
@@ -103,11 +92,11 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = () => {
     return (
       <button
         onClick={() => setVisible(true)}
-        className="absolute z-30 p-2 rounded-lg border border-white/10 hover:bg-white/20 transition-colors"
+        className="absolute z-30 p-1.5 rounded-lg border border-white/10 hover:bg-white/20 transition-colors"
         style={{ left: pos.x, top: pos.y, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
         title="Show toolbar"
       >
-        <Eye size={16} className="text-white/70" />
+        <Eye size={14} className="text-white/70" />
       </button>
     );
   }
@@ -118,21 +107,19 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = () => {
       style={{ left: pos.x, top: pos.y }}
     >
       <div
-        className="flex flex-col items-center rounded-xl border border-white/10 py-1"
+        className="flex items-center rounded-xl border border-white/10 px-1 py-1 gap-0.5"
         style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
       >
-        {/* Drag handle */}
+        {/* Drag handle - LEFT side */}
         <div
           onMouseDown={onGripDown}
-          className="w-8 h-5 flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-white/10 rounded-t-lg transition-colors"
+          className="w-5 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-white/10 rounded-l-lg transition-colors"
           title="Drag to move"
         >
           <GripVertical size={12} className="text-white/40" />
         </div>
 
-        <div className="w-5 h-px bg-white/10" />
-
-        {/* Tools */}
+        {/* Tools - horizontal row */}
         {tools.map((t) => {
           const panelId = (t as { panel?: string }).panel;
           const active = panelId ? isActive(panelId) : false;
@@ -142,27 +129,28 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = () => {
             <button
               key={t.label}
               onMouseUp={() => onToolClick(action)}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+              className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
                 active
                   ? "bg-accent text-white shadow-sm shadow-accent/30"
                   : "text-white/60 hover:text-white hover:bg-white/10"
               }`}
               title={t.label}
             >
-              <t.icon size={15} />
+              <t.icon size={14} />
             </button>
           );
         })}
 
-        <div className="w-5 h-px bg-white/10" />
+        {/* Separator */}
+        <div className="w-px h-5 bg-white/10 mx-0.5" />
 
-        {/* Hide */}
+        {/* Hide - RIGHT side */}
         <button
           onMouseUp={() => onToolClick(() => setVisible(false))}
-          className="w-8 h-7 flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/10 rounded-b-lg transition-colors"
+          className="w-6 h-7 flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/10 rounded-r-lg transition-colors"
           title="Hide toolbar"
         >
-          <EyeOff size={12} />
+          <EyeOff size={11} />
         </button>
       </div>
     </div>
