@@ -212,6 +212,8 @@ export const EditorInterface: React.FC = () => {
     useKeyboardShortcuts();
   useAutoSave();
 
+  const [activeTab, setActiveTab] = useState("assets");
+
   const {
     keyframeEditorOpen,
     setKeyframeEditorOpen,
@@ -416,8 +418,6 @@ export const EditorInterface: React.FC = () => {
   const effectiveTimelineVh = timelineMaximized
     ? COMPACT_TIMELINE_VH
     : timelineVh;
-
-  const [activeTab, setActiveTab] = useState("assets");
 
   return (
     <div
