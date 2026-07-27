@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ToolcraftText as Text } from "@vixmotion/ui";
+import { MousePointer2, Move, Type, Shapes, Pen } from "@/icons/lucide-compat";
 
 import { Preview } from "./Preview";
 import { SeekBar } from "./SeekBar";
@@ -469,33 +470,36 @@ export const EditorInterface: React.FC = () => {
         onMouseDown={onToolbarMouseDown}
       >
         {[
-          { id: "select", label: "V" },
-          { id: "edit", label: "A" },
-          { id: "text", label: "T" },
-          { id: "shape", label: "R" },
-          { id: "pen", label: "P" },
-        ].map((tool) => (
-          <button
-            key={tool.id}
-            onClick={() => setActiveTool(tool.id)}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-mono font-semibold transition-colors ${
-              activeTool === tool.id
-                ? "bg-white/15 text-white shadow-sm"
-                : "text-white/40 hover:text-white/70 hover:bg-white/5"
-            }`}
-            title={tool.id}
-          >
-            {tool.label}
-          </button>
-        ))}
+          { id: "select", icon: MousePointer2 },
+          { id: "edit", icon: Move },
+          { id: "text", icon: Type },
+          { id: "shape", icon: Shapes },
+          { id: "pen", icon: Pen },
+        ].map((tool) => {
+          const Icon = tool.icon;
+          return (
+            <button
+              key={tool.id}
+              onClick={() => setActiveTool(tool.id)}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                activeTool === tool.id
+                  ? "bg-white/15 text-white shadow-sm"
+                  : "text-white/40 hover:text-white/70 hover:bg-white/5"
+              }`}
+              title={tool.id}
+            >
+              <Icon size={15} />
+            </button>
+          );
+        })}
 
         <div className="w-px h-5 bg-white/10 mx-1" />
 
-        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => {}}>
-          Add Track
+        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => setActiveTool("text")}>
+          Text
         </button>
-        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => {}}>
-          Effects
+        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => setActiveTab("assets")}>
+          Media
         </button>
       </div>
 
