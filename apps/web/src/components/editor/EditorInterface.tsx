@@ -7,7 +7,6 @@ import { RightPanel } from "./RightPanel";
 import { LeftPanel } from "./LeftPanel";
 import { LeftIconRail } from "./LeftIconRail";
 import { TopNavbar } from "./TopNavbar";
-import { Toolbar } from "./Toolbar";
 import { Timeline } from "./Timeline";
 import { BottomToolbar } from "./BottomToolbar";
 import { KeyframeEditorPanel } from "./KeyframeEditorPanel";
@@ -215,6 +214,7 @@ export const EditorInterface: React.FC = () => {
   useAutoSave();
 
   const [activeTab, setActiveTab] = useState("assets");
+  const [activeTool, setActiveTool] = useState("select");
 
   const {
     keyframeEditorOpen,
@@ -427,16 +427,58 @@ export const EditorInterface: React.FC = () => {
       className="w-full h-full bg-[#0d0d0d] text-fg overflow-hidden font-sans select-none relative z-20 flex flex-col"
     >
       <TopNavbar />
-      <Toolbar />
+
+      {/* Tool tabs bar */}
+      <div className="h-11 bg-[#0d0d0d] border-b border-white/[0.06] flex items-center gap-1 px-4 shrink-0">
+        {[
+          { id: "select", label: "Select", shortcut: "V" },
+          { id: "hand", label: "Hand", shortcut: "H" },
+          { id: "text", label: "Text", shortcut: "T" },
+          { id: "shape", label: "Shape", shortcut: "R" },
+          { id: "pen", label: "Pen", shortcut: "P" },
+        ].map((tool) => (
+          <button
+            key={tool.id}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              activeTool === tool.id
+                ? "bg-white/10 text-white"
+                : "text-white/40 hover:text-white/70 hover:bg-white/5"
+            }`}
+            onClick={() => setActiveTool(tool.id)}
+            title={`${tool.label} (${tool.shortcut})`}
+          >
+            {tool.label}
+          </button>
+        ))}
+
+        <div className="w-px h-4 bg-white/10 mx-2" />
+
+        <button className="px-3 py-1.5 rounded-md text-xs text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors">
+          Add Track
+        </button>
+        <button className="px-3 py-1.5 rounded-md text-xs text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors">
+          Effects
+        </button>
+      </div>
 
       {/* Main content area */}
       <div className="flex-1 min-h-0 flex">
         {/* Left Icon Rail */}
         <LeftIconRail activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* Left Panel - File Browser */}
+        {/* Left Panel - Content switches by tab */}
         <div className="h-full overflow-hidden shrink-0">
-          <LeftPanel />
+          {activeTab === "assets" ? <LeftPanel /> : null}
+          {activeTab === "upload" && (
+            <div className="h-full flex items-center justify-center bg-[#111111] border-r border-white/[0.06] text-white/40 text-xs" style={{ width: "240px" }}>
+              Upload panel
+            </div>
+          )}
+          {activeTab === "text" && (
+            <div className="h-full flex items-center justify-center bg-[#111111] border-r border-white/[0.06] text-white/40 text-xs" style={{ width: "240px" }}>
+              Text panel
+            </div>
+          )}
         </div>
 
         {/* Center: Preview + Timeline */}
