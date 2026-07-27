@@ -465,40 +465,53 @@ export const EditorInterface: React.FC = () => {
 
       {/* Floating draggable tool tabs bar */}
       <div
-        className="fixed z-50 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl select-none cursor-grab active:cursor-grabbing"
+        className="fixed z-50 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 shadow-2xl select-none cursor-grab active:cursor-grabbing"
         style={{ left: toolbarPos.x, top: toolbarPos.y }}
         onMouseDown={onToolbarMouseDown}
       >
         {[
-          { id: "select", icon: MousePointer2 },
-          { id: "edit", icon: Move },
-          { id: "text", icon: Type },
-          { id: "shape", icon: Shapes },
-          { id: "pen", icon: Pen },
+          { id: "select", icon: MousePointer2, name: "Select" },
+          { id: "edit", icon: Move, name: "Move" },
+          { id: "text", icon: Type, name: "Text" },
+          { id: "shape", icon: Shapes, name: "Shape" },
+          { id: "pen", icon: Pen, name: "Pen" },
         ].map((tool) => {
           const Icon = tool.icon;
+          const isActive = activeTool === tool.id;
           return (
             <button
               key={tool.id}
-              onClick={() => setActiveTool(tool.id)}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
-                activeTool === tool.id
+              onClick={() => {
+                setActiveTool(tool.id);
+                if (tool.id === "text") setActiveTab("text");
+              }}
+              className={`flex flex-col items-center justify-center rounded-lg transition-all px-1.5 py-1 ${
+                isActive
                   ? "bg-white/15 text-white shadow-sm"
                   : "text-white/40 hover:text-white/70 hover:bg-white/5"
               }`}
-              title={tool.id}
+              title={tool.name}
             >
-              <Icon size={15} />
+              <Icon size={16} />
+              <span className={`text-[7px] mt-0.5 leading-none ${isActive ? "text-white/60" : "text-white/20"}`}>
+                {tool.name}
+              </span>
             </button>
           );
         })}
 
-        <div className="w-px h-5 bg-white/10 mx-1" />
+        <div className="w-px h-8 bg-white/10 mx-1" />
 
-        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => setActiveTool("text")}>
-          Text
+        <button
+          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
+          onClick={() => { setActiveTool("text"); setActiveTab("text"); }}
+        >
+          +Text
         </button>
-        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => setActiveTab("assets")}>
+        <button
+          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
+          onClick={() => setActiveTab("assets")}
+        >
           Media
         </button>
       </div>
