@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ToolcraftText as Text } from "@vixmotion/ui";
 
 import { Preview } from "./Preview";
+import { SeekBar } from "./SeekBar";
 import { RightPanel } from "./RightPanel";
 import { LeftPanel } from "./LeftPanel";
 import { LeftIconRail } from "./LeftIconRail";
@@ -444,6 +445,9 @@ export const EditorInterface: React.FC = () => {
               <Preview />
             </PanelErrorBoundary>
           </div>
+
+          {/* Seek bar */}
+          <SeekBar />
 
           {/* Bottom toolbar above timeline */}
           <div className="shrink-0">
