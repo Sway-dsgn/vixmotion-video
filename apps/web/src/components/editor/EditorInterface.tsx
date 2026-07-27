@@ -5,6 +5,8 @@ import { Preview } from "./Preview";
 import { SeekBar } from "./SeekBar";
 import { RightPanel } from "./RightPanel";
 import { LeftPanel } from "./LeftPanel";
+import { UploadPanel } from "./UploadPanel";
+import { TextPanel } from "./TextPanel";
 import { LeftIconRail } from "./LeftIconRail";
 import { TopNavbar } from "./TopNavbar";
 import { Timeline } from "./Timeline";
@@ -215,6 +217,38 @@ export const EditorInterface: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("assets");
   const [activeTool, setActiveTool] = useState("select");
+
+  // Floating toolbar drag
+  const [toolbarPos, setToolbarPos] = useState({ x: 80, y: 60 });
+  const dragState = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
+  const posRef = useRef(toolbarPos);
+  posRef.current = toolbarPos;
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const ds = dragState.current;
+      if (!ds.dragging) return;
+      setToolbarPos({
+        x: ds.startPosX + (e.clientX - ds.startX),
+        y: ds.startPosY + (e.clientY - ds.startY),
+      });
+    };
+    const onUp = () => {
+      dragState.current.dragging = false;
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, []);
+
+  const onToolbarMouseDown = useCallback((e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    const p = posRef.current;
+    dragState.current = { dragging: true, startX: e.clientX, startY: e.clientY, startPosX: p.x, startPosY: p.y };
+  }, []);
 
   const {
     keyframeEditorOpen,
@@ -428,35 +462,39 @@ export const EditorInterface: React.FC = () => {
     >
       <TopNavbar />
 
-      {/* Tool tabs bar */}
-      <div className="h-11 bg-[#0d0d0d] border-b border-white/[0.06] flex items-center gap-1 px-4 shrink-0">
+      {/* Floating draggable tool tabs bar */}
+      <div
+        className="fixed z-50 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl select-none cursor-grab active:cursor-grabbing"
+        style={{ left: toolbarPos.x, top: toolbarPos.y }}
+        onMouseDown={onToolbarMouseDown}
+      >
         {[
-          { id: "select", label: "Select", shortcut: "V" },
-          { id: "hand", label: "Hand", shortcut: "H" },
-          { id: "text", label: "Text", shortcut: "T" },
-          { id: "shape", label: "Shape", shortcut: "R" },
-          { id: "pen", label: "Pen", shortcut: "P" },
+          { id: "select", label: "V" },
+          { id: "edit", label: "A" },
+          { id: "text", label: "T" },
+          { id: "shape", label: "R" },
+          { id: "pen", label: "P" },
         ].map((tool) => (
           <button
             key={tool.id}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            onClick={() => setActiveTool(tool.id)}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-mono font-semibold transition-colors ${
               activeTool === tool.id
-                ? "bg-white/10 text-white"
+                ? "bg-white/15 text-white shadow-sm"
                 : "text-white/40 hover:text-white/70 hover:bg-white/5"
             }`}
-            onClick={() => setActiveTool(tool.id)}
-            title={`${tool.label} (${tool.shortcut})`}
+            title={tool.id}
           >
             {tool.label}
           </button>
         ))}
 
-        <div className="w-px h-4 bg-white/10 mx-2" />
+        <div className="w-px h-5 bg-white/10 mx-1" />
 
-        <button className="px-3 py-1.5 rounded-md text-xs text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors">
+        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => {}}>
           Add Track
         </button>
-        <button className="px-3 py-1.5 rounded-md text-xs text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors">
+        <button className="px-2.5 h-7 rounded-lg text-[10px] text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors font-medium" onClick={() => {}}>
           Effects
         </button>
       </div>
@@ -468,17 +506,9 @@ export const EditorInterface: React.FC = () => {
 
         {/* Left Panel - Content switches by tab */}
         <div className="h-full overflow-hidden shrink-0">
-          {activeTab === "assets" ? <LeftPanel /> : null}
-          {activeTab === "upload" && (
-            <div className="h-full flex items-center justify-center bg-[#111111] border-r border-white/[0.06] text-white/40 text-xs" style={{ width: "240px" }}>
-              Upload panel
-            </div>
-          )}
-          {activeTab === "text" && (
-            <div className="h-full flex items-center justify-center bg-[#111111] border-r border-white/[0.06] text-white/40 text-xs" style={{ width: "240px" }}>
-              Text panel
-            </div>
-          )}
+          {activeTab === "assets" && <LeftPanel />}
+          {activeTab === "upload" && <UploadPanel />}
+          {activeTab === "text" && <TextPanel />}
         </div>
 
         {/* Center: Preview + Timeline */}
