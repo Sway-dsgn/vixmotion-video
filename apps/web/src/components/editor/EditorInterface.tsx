@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ToolcraftText as Text } from "@vixmotion/ui";
-import { MousePointer2, Move, Type, Shapes, Pen } from "@/icons/lucide-compat";
+import { MousePointer2, Move, Type, Shapes, Pen, Square, Circle, Triangle, Hexagon } from "@/icons/lucide-compat";
 
 import { Preview } from "./Preview";
 import { SeekBar } from "./SeekBar";
@@ -483,7 +483,7 @@ export const EditorInterface: React.FC = () => {
               key={tool.id}
               onClick={() => {
                 setActiveTool(tool.id);
-                if (tool.id === "text") setActiveTab("text");
+                if (["text", "shape", "pen"].includes(tool.id)) setActiveTab(tool.id);
               }}
               className={`flex flex-col items-center justify-center rounded-lg transition-all px-1.5 py-1 ${
                 isActive
@@ -510,6 +510,18 @@ export const EditorInterface: React.FC = () => {
         </button>
         <button
           className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
+          onClick={() => { setActiveTool("shape"); setActiveTab("shape"); }}
+        >
+          +Shape
+        </button>
+        <button
+          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
+          onClick={() => { setActiveTool("pen"); setActiveTab("pen"); }}
+        >
+          +Pen
+        </button>
+        <button
+          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
           onClick={() => setActiveTab("assets")}
         >
           Media
@@ -526,6 +538,8 @@ export const EditorInterface: React.FC = () => {
           {activeTab === "assets" && <LeftPanel />}
           {activeTab === "upload" && <UploadPanel />}
           {activeTab === "text" && <TextPanel />}
+          {activeTab === "shape" && <ShapePanel />}
+          {activeTab === "pen" && <PenPanel />}
         </div>
 
         {/* Center: Preview + Timeline */}
@@ -621,5 +635,92 @@ export const EditorInterface: React.FC = () => {
     </div>
   );
 };
+
+function ShapePanel() {
+  const [color, setColor] = useState("#ffffff");
+  const [borderW, setBorderW] = useState(2);
+  return (
+    <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
+      <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0">
+        <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Shapes</span>
+      </div>
+      <div className="p-3 space-y-3">
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { icon: Square, label: "Square" },
+            { icon: Circle, label: "Circle" },
+            { icon: Triangle, label: "Triangle" },
+            { icon: Hexagon, label: "Hexagon" },
+          ].map((s) => {
+            const S = s.icon;
+            return (
+              <button key={s.label} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                <S size={20} className="text-white/60" />
+                <span className="text-[8px] text-white/30">{s.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Fill Color</span>
+          <div className="flex gap-1">
+            {["#ffffff","#ff4444","#44ff44","#4444ff","#ffff44","#ff44ff","#44ffff","#ff8800"].map((c) => (
+              <button key={c} onClick={() => setColor(c)} className={`w-6 h-6 rounded-full ${color === c ? "ring-2 ring-white ring-offset-1 ring-offset-[#111]" : ""}`} style={{ backgroundColor: c }} />
+            ))}
+          </div>
+        </div>
+        <div>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Border: {borderW}px</span>
+          <input type="range" min={0} max={10} value={borderW} onChange={(e) => setBorderW(Number(e.target.value))} className="w-full accent-accent" />
+        </div>
+      </div>
+      <div className="flex-1" />
+      <div className="px-3 pb-3">
+        <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
+          Add Shape to Canvas
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PenPanel() {
+  const [brushSize, setBrushSize] = useState(4);
+  const [brushColor, setBrushColor] = useState("#ffffff");
+  return (
+    <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
+      <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0">
+        <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Pen / Drawing</span>
+      </div>
+      <div className="p-3 space-y-3">
+        <div>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Brush Size: {brushSize}px</span>
+          <input type="range" min={1} max={20} value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="w-full accent-accent" />
+        </div>
+        <div>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Color</span>
+          <div className="flex gap-1 flex-wrap">
+            {["#ffffff","#ff4444","#44ff44","#4444ff","#ffff44","#ff44ff","#44ffff","#ff8800","#000000","#888888"].map((c) => (
+              <button key={c} onClick={() => setBrushColor(c)} className={`w-6 h-6 rounded-full ${brushColor === c ? "ring-2 ring-white ring-offset-1 ring-offset-[#111]" : ""}`} style={{ backgroundColor: c }} />
+            ))}
+          </div>
+        </div>
+        <div>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Opacity</span>
+          <input type="range" min={0} max={100} defaultValue={100} className="w-full accent-accent" />
+        </div>
+      </div>
+      <div className="flex-1" />
+      <div className="px-3 pb-3 space-y-1.5">
+        <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
+          Draw on Canvas
+        </button>
+        <button className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors">
+          Clear Drawing
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default EditorInterface;
