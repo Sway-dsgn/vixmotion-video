@@ -7,6 +7,7 @@ import { RightPanel } from "./RightPanel";
 import { LeftPanel } from "./LeftPanel";
 import { LeftIconRail } from "./LeftIconRail";
 import { TopNavbar } from "./TopNavbar";
+import { Toolbar } from "./Toolbar";
 import { Timeline } from "./Timeline";
 import { BottomToolbar } from "./BottomToolbar";
 import { KeyframeEditorPanel } from "./KeyframeEditorPanel";
@@ -426,6 +427,7 @@ export const EditorInterface: React.FC = () => {
       className="w-full h-full bg-[#0d0d0d] text-fg overflow-hidden font-sans select-none relative z-20 flex flex-col"
     >
       <TopNavbar />
+      <Toolbar />
 
       {/* Main content area */}
       <div className="flex-1 min-h-0 flex">
