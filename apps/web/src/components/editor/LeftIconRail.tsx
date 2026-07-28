@@ -31,7 +31,7 @@ export const LeftIconRail: React.FC<LeftIconRailProps> = ({ activeTab, onTabChan
         return (
           <button
             key={item.id}
-            onClick={() => item.id !== "menu" && onTabChange(item.id)}
+            onClick={() => onTabChange(item.id)}
             className={`w-9 h-9 flex flex-col items-center justify-center rounded-lg mb-1 transition-colors ${
               isActive
                 ? "bg-white/10 text-white"
@@ -54,6 +54,7 @@ export const LeftIconRail: React.FC<LeftIconRailProps> = ({ activeTab, onTabChan
       <button
         className="w-9 h-9 flex flex-col items-center justify-center rounded-lg text-white/35 hover:text-white/60 hover:bg-white/5 transition-colors"
         title="Help"
+        onClick={() => onTabChange("help")}
       >
         <HelpCircle size={16} />
         <span className="text-[8px] mt-0.5 leading-none">Help</span>

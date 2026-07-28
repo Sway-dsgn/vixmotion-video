@@ -542,6 +542,8 @@ export const EditorInterface: React.FC = () => {
           {activeTab === "text" && <TextPanel />}
           {activeTab === "shape" && <ShapePanel />}
           {activeTab === "pen" && <PenPanel />}
+          {activeTab === "menu" && <MenuPanel />}
+          {activeTab === "help" && <HelpPanel />}
         </div>
 
         {/* Center: Preview + Timeline */}
@@ -639,6 +641,112 @@ export const EditorInterface: React.FC = () => {
     </div>
   );
 };
+
+function MenuPanel() {
+  const [view, setView] = useState<"main" | "shortcuts">("main");
+  const setActiveTool = useUIStore((s) => s.setActiveTool);
+
+  if (view === "shortcuts") {
+    return (
+      <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
+        <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0 flex items-center gap-2">
+          <button onClick={() => setView("main")} className="text-white/40 hover:text-white/60 transition-colors">
+            ←
+          </button>
+          <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Shortcuts</span>
+        </div>
+        <div className="flex-1 p-3 space-y-2 overflow-y-auto text-xs text-white/50">
+          <div className="flex justify-between"><span>Play / Pause</span><span className="text-white/30">Space</span></div>
+          <div className="flex justify-between"><span>Frame Back</span><span className="text-white/30">←</span></div>
+          <div className="flex justify-between"><span>Frame Forward</span><span className="text-white/30">→</span></div>
+          <div className="flex justify-between"><span>Undo</span><span className="text-white/30">⌘Z</span></div>
+          <div className="flex justify-between"><span>Redo</span><span className="text-white/30">⇧⌘Z</span></div>
+          <div className="flex justify-between"><span>Cut</span><span className="text-white/30">⌘X</span></div>
+          <div className="flex justify-between"><span>Copy</span><span className="text-white/30">⌘C</span></div>
+          <div className="flex justify-between"><span>Paste</span><span className="text-white/30">⌘V</span></div>
+          <div className="flex justify-between"><span>Delete</span><span className="text-white/30">⌫</span></div>
+          <div className="flex justify-between"><span>Split</span><span className="text-white/30">S</span></div>
+          <div className="flex justify-between"><span>Select All</span><span className="text-white/30">⌘A</span></div>
+          <div className="flex justify-between"><span>Zoom In</span><span className="text-white/30">=</span></div>
+          <div className="flex justify-between"><span>Zoom Out</span><span className="text-white/30">-</span></div>
+          <div className="flex justify-between"><span>Fit Timeline</span><span className="text-white/30">⇧Z</span></div>
+          <div className="flex justify-between"><span>Add Marker</span><span className="text-white/30">M</span></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
+      <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0">
+        <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Menu</span>
+      </div>
+      <div className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">💾</span>
+          <span className="flex-1">Save</span>
+          <span className="text-[10px] text-white/20">⌘S</span>
+        </button>
+        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">📤</span>
+          <span className="flex-1">Export</span>
+          <span className="text-[10px] text-white/20">⌘E</span>
+        </button>
+        <div className="h-px bg-white/[0.06] my-2" />
+        <button onClick={() => setActiveTool("text")} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">T</span>
+          <span className="flex-1">Add Text</span>
+          <span className="text-[10px] text-white/20">T</span>
+        </button>
+        <button onClick={() => setActiveTool("shape")} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">◻</span>
+          <span className="flex-1">Add Shape</span>
+        </button>
+        <button onClick={() => setActiveTool("pen")} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">✏</span>
+          <span className="flex-1">Pen Tool</span>
+        </button>
+        <div className="h-px bg-white/[0.06] my-2" />
+        <button onClick={() => setView("shortcuts")} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">⌨</span>
+          <span className="flex-1">Keyboard Shortcuts</span>
+          <span className="text-[10px] text-white/20">?</span>
+        </button>
+        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">?</span>
+          <span className="flex-1">Help & Documentation</span>
+        </button>
+        <div className="h-px bg-white/[0.06] my-2" />
+        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+          <span className="w-4 text-center text-xs">⚙</span>
+          <span className="flex-1">Settings</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HelpPanel() {
+  return (
+    <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
+      <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0">
+        <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Help</span>
+      </div>
+      <div className="flex-1 p-3 space-y-2 overflow-y-auto text-sm text-white/50">
+        <p className="text-xs text-white/30 leading-relaxed">
+          Vixmotion Video — browser-based video editor.
+        </p>
+        <p className="text-xs text-white/30 leading-relaxed">
+          Use the toolbar to select tools, timeline to arrange clips, and inspector to adjust properties.
+        </p>
+        <div className="h-px bg-white/[0.06] my-2" />
+        <p className="text-xs text-white/20">
+          Keyboard Shortcuts: Press <kbd className="px-1 py-0.5 rounded bg-white/10 text-white/40 text-[10px]">?</kbd> or open Menu &gt; Shortcuts
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function ShapePanel() {
   const shapeType = useUIStore((s) => s.shapeType);
