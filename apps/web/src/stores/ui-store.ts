@@ -98,7 +98,15 @@ export interface UIState {
   motionPathClipId: string | null;
   keyframeEditorOpen: boolean;
   inspectorActiveTab: string;
+  activeTool: string;
   desktopPage: DesktopPage;
+  setActiveTool: (tool: string) => void;
+  brushSize: number;
+  brushColor: string;
+  brushOpacity: number;
+  setBrushSize: (size: number) => void;
+  setBrushColor: (color: string) => void;
+  setBrushOpacity: (opacity: number) => void;
   setDesktopPage(page: DesktopPage): void;
   select: (item: SelectionItem, addToSelection?: boolean) => void;
   selectMultiple: (items: SelectionItem[]) => void;
@@ -247,6 +255,10 @@ export const useUIStore = create<UIState>()(
         keyframeEditorOpen: false,
 
         inspectorActiveTab: "transform",
+        activeTool: "select",
+        brushSize: 4,
+        brushColor: "#ffffff",
+        brushOpacity: 100,
 
         desktopPage: "edit",
 
@@ -577,6 +589,22 @@ export const useUIStore = create<UIState>()(
 
         setInspectorActiveTab: (tabId: string) => {
           set({ inspectorActiveTab: tabId });
+        },
+
+        setActiveTool: (tool: string) => {
+          set({ activeTool: tool });
+        },
+
+        setBrushSize: (size: number) => {
+          set({ brushSize: size });
+        },
+
+        setBrushColor: (color: string) => {
+          set({ brushColor: color });
+        },
+
+        setBrushOpacity: (opacity: number) => {
+          set({ brushOpacity: opacity });
         },
 
         setDesktopPage: (page) => set({ desktopPage: page }),

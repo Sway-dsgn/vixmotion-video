@@ -217,7 +217,9 @@ export const EditorInterface: React.FC = () => {
   useAutoSave();
 
   const [activeTab, setActiveTab] = useState("assets");
-  const [activeTool, setActiveTool] = useState("select");
+
+  const activeTool = useUIStore((s) => s.activeTool);
+  const setActiveTool = useUIStore((s) => s.setActiveTool);
 
   // Floating toolbar drag
   const [toolbarPos, setToolbarPos] = useState({ x: 80, y: 60 });
@@ -545,10 +547,11 @@ export const EditorInterface: React.FC = () => {
         {/* Center: Preview + Timeline */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Preview */}
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden relative">
             <PanelErrorBoundary name="Stage">
               <Preview />
             </PanelErrorBoundary>
+            {activeTool === "pen" && <DrawingCanvas />}
           </div>
 
           {/* Seek bar */}
@@ -685,8 +688,12 @@ function ShapePanel() {
 }
 
 function PenPanel() {
-  const [brushSize, setBrushSize] = useState(4);
-  const [brushColor, setBrushColor] = useState("#ffffff");
+  const brushSize = useUIStore((s) => s.brushSize);
+  const brushColor = useUIStore((s) => s.brushColor);
+  const brushOpacity = useUIStore((s) => s.brushOpacity);
+  const setBrushSize = useUIStore((s) => s.setBrushSize);
+  const setBrushColor = useUIStore((s) => s.setBrushColor);
+  const setBrushOpacity = useUIStore((s) => s.setBrushOpacity);
   return (
     <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
       <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0">
@@ -695,7 +702,7 @@ function PenPanel() {
       <div className="p-3 space-y-3">
         <div>
           <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Brush Size: {brushSize}px</span>
-          <input type="range" min={1} max={20} value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="w-full accent-accent" />
+          <input type="range" min={1} max={30} value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="w-full accent-accent" />
         </div>
         <div>
           <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Color</span>
@@ -706,20 +713,98 @@ function PenPanel() {
           </div>
         </div>
         <div>
-          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Opacity</span>
-          <input type="range" min={0} max={100} defaultValue={100} className="w-full accent-accent" />
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Opacity: {brushOpacity}%</span>
+          <input type="range" min={0} max={100} value={brushOpacity} onChange={(e) => setBrushOpacity(Number(e.target.value))} className="w-full accent-accent" />
         </div>
       </div>
       <div className="flex-1" />
       <div className="px-3 pb-3 space-y-1.5">
         <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
-          Draw on Canvas
+          Draw on Canvas — Pen Active
         </button>
-        <button className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors">
-          Clear Drawing
+        <button
+          className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors"
+          onClick={() => { setBrushSize(4); setBrushColor("#ffffff"); setBrushOpacity(100); }}
+        >
+          Reset Brush
         </button>
       </div>
     </div>
+  );
+}
+
+function DrawingCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawing = useRef(false);
+  const lastPoint = useRef<{ x: number; y: number } | null>(null);
+  const brushSize = useUIStore((s) => s.brushSize);
+  const brushColor = useUIStore((s) => s.brushColor);
+  const brushOpacity = useUIStore((s) => s.brushOpacity);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+
+  const getPos = (e: React.PointerEvent) => {
+    const rect = canvasRef.current!.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  const startDraw = (e: React.PointerEvent) => {
+    isDrawing.current = true;
+    lastPoint.current = getPos(e);
+    canvasRef.current?.setPointerCapture(e.pointerId);
+  };
+
+  const draw = (e: React.PointerEvent) => {
+    if (!isDrawing.current || !lastPoint.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const pos = getPos(e);
+
+    ctx.beginPath();
+    ctx.moveTo(lastPoint.current.x, lastPoint.current.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = brushColor;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.globalAlpha = brushOpacity / 100;
+    ctx.stroke();
+
+    lastPoint.current = pos;
+  };
+
+  const endDraw = (e: React.PointerEvent) => {
+    isDrawing.current = false;
+    lastPoint.current = null;
+    canvasRef.current?.releasePointerCapture(e.pointerId);
+  };
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
+      style={{ pointerEvents: "auto" }}
+      onPointerDown={startDraw}
+      onPointerMove={draw}
+      onPointerUp={endDraw}
+      onPointerLeave={endDraw}
+    />
   );
 }
 
