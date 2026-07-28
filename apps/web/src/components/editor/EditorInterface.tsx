@@ -720,7 +720,13 @@ function PenPanel() {
       <div className="flex-1" />
       <div className="px-3 pb-3 space-y-1.5">
         <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
-          Draw on Canvas — Pen Active
+          Pen Active — Draw on Preview
+        </button>
+        <button
+          className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors"
+          onClick={() => { clearDrawingCanvas(); }}
+        >
+          Clear Drawing
         </button>
         <button
           className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors"
@@ -732,6 +738,8 @@ function PenPanel() {
     </div>
   );
 }
+
+let clearDrawingCanvas: () => void = () => {};
 
 function DrawingCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -747,6 +755,10 @@ function DrawingCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    clearDrawingCanvas = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+
     const resize = () => {
       canvas.width = canvas.offsetWidth * window.devicePixelRatio;
       canvas.height = canvas.offsetHeight * window.devicePixelRatio;
@@ -754,7 +766,10 @@ function DrawingCanvas() {
     };
     resize();
     window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      clearDrawingCanvas = () => {};
+    };
   }, []);
 
   const getPos = (e: React.PointerEvent) => {
