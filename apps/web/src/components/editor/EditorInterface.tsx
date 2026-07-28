@@ -536,7 +536,7 @@ export const EditorInterface: React.FC = () => {
         <LeftIconRail activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Left Panel - Content switches by tab */}
-        <div className="h-full overflow-hidden shrink-0">
+        <div className="h-full overflow-hidden shrink-0 w-80">
           {activeTab === "assets" && <AssetsPanel />}
           {activeTab === "upload" && <UploadPanel />}
           {activeTab === "text" && <TextPanel />}
