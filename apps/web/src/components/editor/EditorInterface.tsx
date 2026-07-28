@@ -49,9 +49,9 @@ import {
 // top workspace (media | stage | inspector) gets the rest. The grid
 // from the mockup is `1fr var(--tl-height)` rows â€” by default
 // timeline is 58vh which leaves the top row with ~38â€“42vh of stage.
-const DEFAULT_TIMELINE_VH = 35;
-const MIN_TIMELINE_VH = 18;
-const MAX_TIMELINE_VH = 70;
+const DEFAULT_TIMELINE_VH = 20;
+const MIN_TIMELINE_VH = 10;
+const MAX_TIMELINE_VH = 80;
 // Compact mode: timeline takes most of the height, leaving a small preview.
 const COMPACT_TIMELINE_VH = 75;
 
