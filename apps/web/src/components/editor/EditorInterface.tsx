@@ -16,7 +16,7 @@ import { KeyframeEditorPanel } from "./KeyframeEditorPanel";
 import { AudioMixer } from "../audio-mixer";
 import { AIPanel } from "./ai-panel/AIPanel";
 import { KeyboardShortcutsOverlay } from "./KeyboardShortcutsOverlay";
-import { PanelErrorBoundary } from "../ErrorBoundary";
+import { ErrorBoundary, PanelErrorBoundary } from "../ErrorBoundary";
 import { SpotlightTour, MoGraphTour } from "./tour";
 import { useProjectStore } from "../../stores/project-store";
 import { useUIStore } from "../../stores/ui-store";
@@ -49,11 +49,11 @@ import {
 // top workspace (media | stage | inspector) gets the rest. The grid
 // from the mockup is `1fr var(--tl-height)` rows â€” by default
 // timeline is 58vh which leaves the top row with ~38â€“42vh of stage.
-const DEFAULT_TIMELINE_VH = 20;
-const MIN_TIMELINE_VH = 10;
-const MAX_TIMELINE_VH = 80;
+const DEFAULT_TIMELINE_VH = 35;
+const MIN_TIMELINE_VH = 15;
+const MAX_TIMELINE_VH = 85;
 // Compact mode: timeline takes most of the height, leaving a small preview.
-const COMPACT_TIMELINE_VH = 75;
+const COMPACT_TIMELINE_VH = 80;
 
 const DEFAULT_MEDIA_W = 320;
 const MIN_MEDIA_W = 260;
@@ -586,12 +586,14 @@ export const EditorInterface: React.FC = () => {
       </div>
       )}
 
+      <ErrorBoundary fallback={<p className="text-white/50 text-xs p-4">Something went wrong. Try refreshing.</p>}>
       {/* Main content area */}
       <div className="flex-1 min-h-0 flex">
         {/* Left Icon Rail */}
         <LeftIconRail activeTab={activeTab} onTabChange={setActiveTab} beginnerMode={beginnerMode} />
 
         {/* Left Panel - Content switches by tab */}
+        <PanelErrorBoundary name="Left Panel">
         <div className="h-full overflow-hidden shrink-0 w-80">
           {activeTab === "assets" && <AssetsPanel />}
           {activeTab === "upload" && <UploadPanel />}
@@ -601,6 +603,7 @@ export const EditorInterface: React.FC = () => {
           {activeTab === "menu" && <MenuPanel />}
           {activeTab === "help" && <HelpPanel />}
         </div>
+        </PanelErrorBoundary>
 
         {/* Center: Preview + Timeline */}
         <div className="flex-1 min-w-0 flex flex-col">
@@ -614,7 +617,7 @@ export const EditorInterface: React.FC = () => {
           </div>
 
           {/* Seek bar */}
-          <SeekBar />
+          {!beginnerMode && <SeekBar />}
 
           {/* Bottom toolbar above timeline */}
           <div className="shrink-0">
@@ -678,14 +681,15 @@ export const EditorInterface: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
         </div>
+      </div>
 
         {/* Right Panel - Inspector */}
         <div className="h-full overflow-hidden shrink-0">
           <RightPanel />
         </div>
       </div>
+      </ErrorBoundary>
 
       <KeyboardShortcutsOverlay
         isOpen={showShortcutsOverlay}
