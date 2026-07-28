@@ -104,9 +104,17 @@ export interface UIState {
   brushSize: number;
   brushColor: string;
   brushOpacity: number;
+  shapeType: "square" | "circle" | "triangle" | "hexagon";
+  shapeFillColor: string;
+  shapeStrokeColor: string;
+  shapeStrokeWidth: number;
   setBrushSize: (size: number) => void;
   setBrushColor: (color: string) => void;
   setBrushOpacity: (opacity: number) => void;
+  setShapeType: (type: "square" | "circle" | "triangle" | "hexagon") => void;
+  setShapeFillColor: (color: string) => void;
+  setShapeStrokeColor: (color: string) => void;
+  setShapeStrokeWidth: (width: number) => void;
   setDesktopPage(page: DesktopPage): void;
   select: (item: SelectionItem, addToSelection?: boolean) => void;
   selectMultiple: (items: SelectionItem[]) => void;
@@ -259,6 +267,10 @@ export const useUIStore = create<UIState>()(
         brushSize: 4,
         brushColor: "#ffffff",
         brushOpacity: 100,
+        shapeType: "square",
+        shapeFillColor: "#ffffff",
+        shapeStrokeColor: "#ffffff",
+        shapeStrokeWidth: 2,
 
         desktopPage: "edit",
 
@@ -605,6 +617,19 @@ export const useUIStore = create<UIState>()(
 
         setBrushOpacity: (opacity: number) => {
           set({ brushOpacity: opacity });
+        },
+
+        setShapeType: (type: "square" | "circle" | "triangle" | "hexagon") => {
+          set({ shapeType: type });
+        },
+        setShapeFillColor: (color: string) => {
+          set({ shapeFillColor: color });
+        },
+        setShapeStrokeColor: (color: string) => {
+          set({ shapeStrokeColor: color });
+        },
+        setShapeStrokeWidth: (width: number) => {
+          set({ shapeStrokeWidth: width });
         },
 
         setDesktopPage: (page) => set({ desktopPage: page }),

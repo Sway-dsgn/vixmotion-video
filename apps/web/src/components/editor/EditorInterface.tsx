@@ -552,6 +552,7 @@ export const EditorInterface: React.FC = () => {
               <Preview />
             </PanelErrorBoundary>
             {activeTool === "pen" && <DrawingCanvas />}
+            {activeTool === "shape" && <ShapeCanvas />}
           </div>
 
           {/* Seek bar */}
@@ -640,8 +641,14 @@ export const EditorInterface: React.FC = () => {
 };
 
 function ShapePanel() {
-  const [color, setColor] = useState("#ffffff");
-  const [borderW, setBorderW] = useState(2);
+  const shapeType = useUIStore((s) => s.shapeType);
+  const shapeFillColor = useUIStore((s) => s.shapeFillColor);
+  const shapeStrokeColor = useUIStore((s) => s.shapeStrokeColor);
+  const shapeStrokeWidth = useUIStore((s) => s.shapeStrokeWidth);
+  const setShapeType = useUIStore((s) => s.setShapeType);
+  const setShapeFillColor = useUIStore((s) => s.setShapeFillColor);
+  const setShapeStrokeColor = useUIStore((s) => s.setShapeStrokeColor);
+  const setShapeStrokeWidth = useUIStore((s) => s.setShapeStrokeWidth);
   return (
     <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
       <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0">
@@ -650,15 +657,16 @@ function ShapePanel() {
       <div className="p-3 space-y-3">
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: Square, label: "Square" },
-            { icon: Circle, label: "Circle" },
-            { icon: Triangle, label: "Triangle" },
-            { icon: Hexagon, label: "Hexagon" },
+            { icon: Square, label: "Square", type: "square" as const },
+            { icon: Circle, label: "Circle", type: "circle" as const },
+            { icon: Triangle, label: "Triangle", type: "triangle" as const },
+            { icon: Hexagon, label: "Hexagon", type: "hexagon" as const },
           ].map((s) => {
             const S = s.icon;
+            const isActive = shapeType === s.type;
             return (
-              <button key={s.label} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                <S size={20} className="text-white/60" />
+              <button key={s.label} onClick={() => setShapeType(s.type)} className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${isActive ? "bg-accent/20 ring-1 ring-accent" : "bg-white/5 hover:bg-white/10"}`}>
+                <S size={20} className={isActive ? "text-accent" : "text-white/60"} />
                 <span className="text-[8px] text-white/30">{s.label}</span>
               </button>
             );
@@ -666,21 +674,35 @@ function ShapePanel() {
         </div>
         <div>
           <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Fill Color</span>
-          <div className="flex gap-1">
-            {["#ffffff","#ff4444","#44ff44","#4444ff","#ffff44","#ff44ff","#44ffff","#ff8800"].map((c) => (
-              <button key={c} onClick={() => setColor(c)} className={`w-6 h-6 rounded-full ${color === c ? "ring-2 ring-white ring-offset-1 ring-offset-[#111]" : ""}`} style={{ backgroundColor: c }} />
+          <div className="flex gap-1 flex-wrap">
+            {["#ffffff","#ff4444","#44ff44","#4444ff","#ffff44","#ff44ff","#44ffff","#ff8800","transparent"].map((c) => (
+              <button key={c} onClick={() => setShapeFillColor(c)} className={`w-6 h-6 rounded-full ${shapeFillColor === c ? "ring-2 ring-white ring-offset-1 ring-offset-[#111]" : ""}`} style={{ backgroundColor: c === "transparent" ? "#555" : c, border: c === "transparent" ? "2px dashed #888" : "none" }} />
             ))}
           </div>
         </div>
         <div>
-          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Border: {borderW}px</span>
-          <input type="range" min={0} max={10} value={borderW} onChange={(e) => setBorderW(Number(e.target.value))} className="w-full accent-accent" />
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Outline: {shapeStrokeWidth}px</span>
+          <input type="range" min={0} max={10} value={shapeStrokeWidth} onChange={(e) => setShapeStrokeWidth(Number(e.target.value))} className="w-full accent-accent" />
+        </div>
+        <div>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider block mb-1.5">Outline Color</span>
+          <div className="flex gap-1 flex-wrap">
+            {["#ffffff","#ff4444","#44ff44","#4444ff","#ffff44","#ff44ff","#44ffff","#ff8800","#000000"].map((c) => (
+              <button key={c} onClick={() => setShapeStrokeColor(c)} className={`w-6 h-6 rounded-full ${shapeStrokeColor === c ? "ring-2 ring-white ring-offset-1 ring-offset-[#111]" : ""}`} style={{ backgroundColor: c }} />
+            ))}
+          </div>
         </div>
       </div>
       <div className="flex-1" />
-      <div className="px-3 pb-3">
+      <div className="px-3 pb-3 space-y-1.5">
         <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
-          Add Shape to Canvas
+          Shape Active — Click & Drag on Preview
+        </button>
+        <button
+          className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors"
+          onClick={() => { clearShapeCanvas(); }}
+        >
+          Clear Shapes
         </button>
       </div>
     </div>
@@ -819,6 +841,148 @@ function DrawingCanvas() {
       onPointerMove={draw}
       onPointerUp={endDraw}
       onPointerLeave={endDraw}
+    />
+  );
+}
+
+let clearShapeCanvas: () => void = () => {};
+
+function ShapeCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawing = useRef(false);
+  const startPoint = useRef<{ x: number; y: number } | null>(null);
+  const currentPoint = useRef<{ x: number; y: number } | null>(null);
+  const shapeType = useUIStore((s) => s.shapeType);
+  const shapeFillColor = useUIStore((s) => s.shapeFillColor);
+  const shapeStrokeColor = useUIStore((s) => s.shapeStrokeColor);
+  const shapeStrokeWidth = useUIStore((s) => s.shapeStrokeWidth);
+  const committedShapes = useRef<Array<() => void>>([]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    clearShapeCanvas = () => {
+      committedShapes.current = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+
+    const resize = () => {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      canvas.width = w * window.devicePixelRatio;
+      canvas.height = h * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      clearShapeCanvas = () => {};
+    };
+  }, []);
+
+  const getPos = (e: React.PointerEvent) => {
+    const rect = canvasRef.current!.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  const drawShape = (ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, fill: string, stroke: string, lineWidth: number, type: string) => {
+    const left = Math.min(x1, x2);
+    const top = Math.min(y1, y2);
+    const w = Math.abs(x2 - x1);
+    const h = Math.abs(y2 - y1);
+    const cx = left + w / 2;
+    const cy = top + h / 2;
+    const r = Math.min(w, h) / 2;
+
+    ctx.beginPath();
+    switch (type) {
+      case "square":
+        ctx.rect(left, top, w, h);
+        break;
+      case "circle":
+        ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
+        break;
+      case "triangle":
+        ctx.moveTo(cx, top);
+        ctx.lineTo(left, top + h);
+        ctx.lineTo(left + w, top + h);
+        ctx.closePath();
+        break;
+      case "hexagon": {
+        for (let i = 0; i < 6; i++) {
+          const angle = (Math.PI / 3) * i - Math.PI / 2;
+          const px = cx + r * Math.cos(angle);
+          const py = cy + r * Math.sin(angle);
+          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        break;
+      }
+    }
+    if (fill !== "transparent") {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+    if (lineWidth > 0) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+    }
+  };
+
+  const startDraw = (e: React.PointerEvent) => {
+    isDrawing.current = true;
+    const pos = getPos(e);
+    startPoint.current = pos;
+    currentPoint.current = pos;
+    canvasRef.current?.setPointerCapture(e.pointerId);
+  };
+
+  const draw = (e: React.PointerEvent) => {
+    if (!isDrawing.current || !startPoint.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    currentPoint.current = getPos(e);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    committedShapes.current.forEach((fn) => fn());
+    drawShape(ctx, startPoint.current.x, startPoint.current.y, currentPoint.current.x, currentPoint.current.y, shapeFillColor, shapeStrokeColor, shapeStrokeWidth, shapeType);
+  };
+
+  const endDraw = (e: React.PointerEvent) => {
+    if (!isDrawing.current || !startPoint.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const end = getPos(e);
+
+    const snapshot = () => {
+      drawShape(ctx, startPoint.current!.x, startPoint.current!.y, end.x, end.y, shapeFillColor, shapeStrokeColor, shapeStrokeWidth, shapeType);
+    };
+    snapshot();
+    committedShapes.current.push(snapshot);
+
+    isDrawing.current = false;
+    startPoint.current = null;
+    currentPoint.current = null;
+    canvas.releasePointerCapture(e.pointerId);
+  };
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
+      style={{ pointerEvents: "auto" }}
+      onPointerDown={startDraw}
+      onPointerMove={draw}
+      onPointerUp={endDraw}
     />
   );
 }
