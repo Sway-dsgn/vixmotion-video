@@ -551,8 +551,8 @@ export const EditorInterface: React.FC = () => {
             <PanelErrorBoundary name="Stage">
               <Preview />
             </PanelErrorBoundary>
-            {activeTool === "pen" && <DrawingCanvas />}
-            {activeTool === "shape" && <ShapeCanvas />}
+            <DrawingCanvas />
+            <ShapeCanvas />
           </div>
 
           {/* Seek bar */}
@@ -764,6 +764,8 @@ function PenPanel() {
 let clearDrawingCanvas: () => void = () => {};
 
 function DrawingCanvas() {
+  const activeTool = useUIStore((s) => s.activeTool);
+  const visible = activeTool === "pen";
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
@@ -800,6 +802,7 @@ function DrawingCanvas() {
   };
 
   const startDraw = (e: React.PointerEvent) => {
+    if (!visible) return;
     isDrawing.current = true;
     lastPoint.current = getPos(e);
     canvasRef.current?.setPointerCapture(e.pointerId);
@@ -836,7 +839,7 @@ function DrawingCanvas() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
-      style={{ pointerEvents: "auto" }}
+      style={{ pointerEvents: visible ? "auto" : "none" }}
       onPointerDown={startDraw}
       onPointerMove={draw}
       onPointerUp={endDraw}
@@ -847,7 +850,20 @@ function DrawingCanvas() {
 
 let clearShapeCanvas: () => void = () => {};
 
+interface ShapeData {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  fill: string;
+  stroke: string;
+  lineWidth: number;
+  type: string;
+}
+
 function ShapeCanvas() {
+  const activeTool = useUIStore((s) => s.activeTool);
+  const visible = activeTool === "shape";
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const startPoint = useRef<{ x: number; y: number } | null>(null);
@@ -856,38 +872,8 @@ function ShapeCanvas() {
   const shapeFillColor = useUIStore((s) => s.shapeFillColor);
   const shapeStrokeColor = useUIStore((s) => s.shapeStrokeColor);
   const shapeStrokeWidth = useUIStore((s) => s.shapeStrokeWidth);
-  const committedShapes = useRef<Array<() => void>>([]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    clearShapeCanvas = () => {
-      committedShapes.current = [];
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    };
-
-    const resize = () => {
-      const w = canvas.offsetWidth;
-      const h = canvas.offsetHeight;
-      canvas.width = w * window.devicePixelRatio;
-      canvas.height = h * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-    return () => {
-      window.removeEventListener("resize", resize);
-      clearShapeCanvas = () => {};
-    };
-  }, []);
-
-  const getPos = (e: React.PointerEvent) => {
-    const rect = canvasRef.current!.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-  };
+  const committedShapes = useRef<ShapeData[]>([]);
+  const previewShape = useRef<ShapeData | null>(null);
 
   const drawShape = (ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, fill: string, stroke: string, lineWidth: number, type: string) => {
     const left = Math.min(x1, x2);
@@ -934,7 +920,56 @@ function ShapeCanvas() {
     }
   };
 
+  const redrawAll = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of committedShapes.current) {
+      drawShape(ctx, s.x1, s.y1, s.x2, s.y2, s.fill, s.stroke, s.lineWidth, s.type);
+    }
+    if (previewShape.current) {
+      const p = previewShape.current;
+      drawShape(ctx, p.x1, p.y1, p.x2, p.y2, p.fill, p.stroke, p.lineWidth, p.type);
+    }
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    clearShapeCanvas = () => {
+      committedShapes.current = [];
+      previewShape.current = null;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+
+    const resize = () => {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      canvas.width = w * window.devicePixelRatio;
+      canvas.height = h * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      redrawAll();
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      clearShapeCanvas = () => {};
+    };
+  }, [redrawAll]);
+
+  const getPos = (e: React.PointerEvent) => {
+    const rect = canvasRef.current!.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
   const startDraw = (e: React.PointerEvent) => {
+    if (!visible) return;
     isDrawing.current = true;
     const pos = getPos(e);
     startPoint.current = pos;
@@ -944,42 +979,40 @@ function ShapeCanvas() {
 
   const draw = (e: React.PointerEvent) => {
     if (!isDrawing.current || !startPoint.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
     currentPoint.current = getPos(e);
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    committedShapes.current.forEach((fn) => fn());
-    drawShape(ctx, startPoint.current.x, startPoint.current.y, currentPoint.current.x, currentPoint.current.y, shapeFillColor, shapeStrokeColor, shapeStrokeWidth, shapeType);
+    previewShape.current = {
+      x1: startPoint.current.x, y1: startPoint.current.y,
+      x2: currentPoint.current.x, y2: currentPoint.current.y,
+      fill: shapeFillColor, stroke: shapeStrokeColor,
+      lineWidth: shapeStrokeWidth, type: shapeType,
+    };
+    redrawAll();
   };
 
   const endDraw = (e: React.PointerEvent) => {
     if (!isDrawing.current || !startPoint.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
     const end = getPos(e);
-
-    const snapshot = () => {
-      drawShape(ctx, startPoint.current!.x, startPoint.current!.y, end.x, end.y, shapeFillColor, shapeStrokeColor, shapeStrokeWidth, shapeType);
+    const data: ShapeData = {
+      x1: startPoint.current.x, y1: startPoint.current.y,
+      x2: end.x, y2: end.y,
+      fill: shapeFillColor, stroke: shapeStrokeColor,
+      lineWidth: shapeStrokeWidth, type: shapeType,
     };
-    snapshot();
-    committedShapes.current.push(snapshot);
+    committedShapes.current.push(data);
+    previewShape.current = null;
+    redrawAll();
 
     isDrawing.current = false;
     startPoint.current = null;
     currentPoint.current = null;
-    canvas.releasePointerCapture(e.pointerId);
+    canvasRef.current?.releasePointerCapture(e.pointerId);
   };
 
   return (
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
-      style={{ pointerEvents: "auto" }}
+      style={{ pointerEvents: visible ? "auto" : "none" }}
       onPointerDown={startDraw}
       onPointerMove={draw}
       onPointerUp={endDraw}
