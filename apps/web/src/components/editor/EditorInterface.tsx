@@ -220,6 +220,7 @@ export const EditorInterface: React.FC = () => {
 
   const activeTool = useUIStore((s) => s.activeTool);
   const setActiveTool = useUIStore((s) => s.setActiveTool);
+  const beginnerMode = useUIStore((s) => s.beginnerMode);
 
   // Floating toolbar drag
   const [toolbarPos, setToolbarPos] = useState({ x: 80, y: 60 });
@@ -467,16 +468,16 @@ export const EditorInterface: React.FC = () => {
 
       {/* Floating draggable tool tabs bar */}
       <div
-        className="fixed z-50 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 shadow-2xl select-none cursor-grab active:cursor-grabbing"
+        className={`fixed z-50 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 shadow-2xl select-none cursor-grab active:cursor-grabbing ${beginnerMode ? "px-4 py-2.5 gap-2" : ""}`}
         style={{ left: toolbarPos.x, top: toolbarPos.y }}
         onMouseDown={onToolbarMouseDown}
       >
         {[
-          { id: "select", icon: MousePointer2, name: "Select" },
-          { id: "edit", icon: Move, name: "Move" },
-          { id: "text", icon: Type, name: "Text" },
-          { id: "shape", icon: Shapes, name: "Shape" },
-          { id: "pen", icon: Pen, name: "Pen" },
+          { id: "select", icon: MousePointer2, name: beginnerMode ? "Select" : "Select" },
+          { id: "edit", icon: Move, name: beginnerMode ? "Move" : "Move" },
+          { id: "text", icon: Type, name: beginnerMode ? "Text" : "Text" },
+          { id: "shape", icon: Shapes, name: beginnerMode ? "Shape" : "Shape" },
+          { id: "pen", icon: Pen, name: beginnerMode ? "Draw" : "Pen" },
         ].map((tool) => {
           const Icon = tool.icon;
           const isActive = activeTool === tool.id;
@@ -487,47 +488,48 @@ export const EditorInterface: React.FC = () => {
                 setActiveTool(tool.id);
                 if (["text", "shape", "pen"].includes(tool.id)) setActiveTab(tool.id);
               }}
-              className={`flex flex-col items-center justify-center rounded-lg transition-all px-1.5 py-1 ${
+              className={`flex flex-col items-center justify-center rounded-lg transition-all ${beginnerMode ? "px-3 py-1.5 min-w-[60px]" : "px-1.5 py-1"} ${
                 isActive
                   ? "bg-white/15 text-white shadow-sm"
                   : "text-white/40 hover:text-white/70 hover:bg-white/5"
               }`}
               title={tool.name}
             >
-              <Icon size={16} />
-              <span className={`text-[7px] mt-0.5 leading-none ${isActive ? "text-white/60" : "text-white/20"}`}>
+              <Icon size={beginnerMode ? 18 : 16} />
+              <span className={`${beginnerMode ? "text-[9px] mt-1 font-medium" : "text-[7px] mt-0.5 leading-none"} ${isActive ? "text-white/60" : "text-white/20"}`}>
                 {tool.name}
               </span>
             </button>
           );
         })}
 
-        <div className="w-px h-8 bg-white/10 mx-1" />
+        <div className={`w-px bg-white/10 mx-1 ${beginnerMode ? "h-9 mx-2" : "h-8"}`} />
 
-        <button
-          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
-          onClick={() => { setActiveTool("text"); setActiveTab("text"); }}
-        >
-          +Text
-        </button>
-        <button
-          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
-          onClick={() => { setActiveTool("shape"); setActiveTab("shape"); }}
-        >
-          +Shape
-        </button>
-        <button
-          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
-          onClick={() => { setActiveTool("pen"); setActiveTab("pen"); }}
-        >
-          +Pen
-        </button>
-        <button
-          className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
-          onClick={() => setActiveTab("assets")}
-        >
-          Media
-        </button>
+        {beginnerMode ? (
+          <>
+            <button className="px-3.5 h-9 rounded-lg text-xs font-medium text-white/60 hover:text-white/80 hover:bg-white/5 transition-colors flex items-center gap-1.5" onClick={() => { setActiveTool("text"); setActiveTab("text"); }}>
+              <Type size={14} /> <span>Text</span>
+            </button>
+            <button className="px-3.5 h-9 rounded-lg text-xs font-medium text-white/60 hover:text-white/80 hover:bg-white/5 transition-colors flex items-center gap-1.5" onClick={() => { setActiveTool("shape"); setActiveTab("shape"); }}>
+              <Shapes size={14} /> <span>Shape</span>
+            </button>
+            <button className="px-3.5 h-9 rounded-lg text-xs font-medium text-white/60 hover:text-white/80 hover:bg-white/5 transition-colors flex items-center gap-1.5" onClick={() => { setActiveTool("pen"); setActiveTab("pen"); }}>
+              <Pen size={14} /> <span>Draw</span>
+            </button>
+            <div className="w-px h-9 bg-white/10 mx-1.5" />
+            <button className="px-3.5 h-9 rounded-lg text-xs font-medium text-white/60 hover:text-white/80 hover:bg-white/5 transition-colors flex items-center gap-1.5" onClick={() => setActiveTab("assets")}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+              <span>Media</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors" onClick={() => { setActiveTool("text"); setActiveTab("text"); }}>+Text</button>
+            <button className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors" onClick={() => { setActiveTool("shape"); setActiveTab("shape"); }}>+Shape</button>
+            <button className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors" onClick={() => { setActiveTool("pen"); setActiveTab("pen"); }}>+Pen</button>
+            <button className="px-3 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors" onClick={() => setActiveTab("assets")}>Media</button>
+          </>
+        )}
       </div>
 
       {/* Main content area */}
@@ -645,6 +647,8 @@ export const EditorInterface: React.FC = () => {
 function MenuPanel() {
   const [view, setView] = useState<"main" | "shortcuts">("main");
   const setActiveTool = useUIStore((s) => s.setActiveTool);
+  const beginnerMode = useUIStore((s) => s.beginnerMode);
+  const setBeginnerMode = useUIStore((s) => s.setBeginnerMode);
 
   if (view === "shortcuts") {
     return (
@@ -717,6 +721,15 @@ function MenuPanel() {
           <span className="flex-1">Help & Documentation</span>
         </button>
         <div className="h-px bg-white/[0.06] my-2" />
+        <div className="px-3 py-2 flex items-center justify-between">
+          <span className="text-sm text-white/60">Beginner Mode</span>
+          <button
+            onClick={() => setBeginnerMode(!beginnerMode)}
+            className={`relative w-10 h-5 rounded-full transition-colors ${beginnerMode ? "bg-accent" : "bg-white/20"}`}
+          >
+            <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${beginnerMode ? "translate-x-5 left-0.5" : "translate-x-0.5 left-0"}`} />
+          </button>
+        </div>
         <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
           <span className="w-4 text-center text-xs">⚙</span>
           <span className="flex-1">Settings</span>

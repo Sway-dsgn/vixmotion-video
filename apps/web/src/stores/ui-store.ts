@@ -100,7 +100,9 @@ export interface UIState {
   inspectorActiveTab: string;
   activeTool: string;
   desktopPage: DesktopPage;
+  beginnerMode: boolean;
   setActiveTool: (tool: string) => void;
+  setBeginnerMode: (on: boolean) => void;
   brushSize: number;
   brushColor: string;
   brushOpacity: number;
@@ -264,6 +266,7 @@ export const useUIStore = create<UIState>()(
 
         inspectorActiveTab: "transform",
         activeTool: "select",
+        beginnerMode: true,
         brushSize: 4,
         brushColor: "#ffffff",
         brushOpacity: 100,
@@ -605,6 +608,10 @@ export const useUIStore = create<UIState>()(
 
         setActiveTool: (tool: string) => {
           set({ activeTool: tool });
+        },
+
+        setBeginnerMode: (on: boolean) => {
+          set({ beginnerMode: on });
         },
 
         setBrushSize: (size: number) => {
