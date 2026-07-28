@@ -5,7 +5,7 @@ import { MousePointer2, Move, Type, Shapes, Pen, Square, Circle, Triangle, Hexag
 import { Preview } from "./Preview";
 import { SeekBar } from "./SeekBar";
 import { RightPanel } from "./RightPanel";
-import { LeftPanel } from "./LeftPanel";
+import { AssetsPanel } from "./AssetsPanel";
 import { UploadPanel } from "./UploadPanel";
 import { TextPanel } from "./TextPanel";
 import { LeftIconRail } from "./LeftIconRail";
@@ -537,7 +537,7 @@ export const EditorInterface: React.FC = () => {
 
         {/* Left Panel - Content switches by tab */}
         <div className="h-full overflow-hidden shrink-0">
-          {activeTab === "assets" && <LeftPanel />}
+          {activeTab === "assets" && <AssetsPanel />}
           {activeTab === "upload" && <UploadPanel />}
           {activeTab === "text" && <TextPanel />}
           {activeTab === "shape" && <ShapePanel />}
