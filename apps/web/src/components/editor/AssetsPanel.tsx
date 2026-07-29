@@ -675,6 +675,7 @@ export const AssetsPanel: React.FC = () => {
 
   // UI store
   const { select, isSelected, startDrag, openModal } = useUIStore();
+  const beginnerMode = useUIStore((s) => s.beginnerMode);
 
   // Count missing assets
   const missingAssetsCount = mediaItems.filter(
@@ -1556,6 +1557,7 @@ export const AssetsPanel: React.FC = () => {
       className="w-full h-full bg-bg-1 overflow-hidden flex flex-row relative"
     >
       {/* â”€â”€ Vertical tool rail (icon + label, left) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {!beginnerMode && (
       <div className="flex flex-col items-center gap-1 px-0 py-[14px] border-r border-border bg-bg-1 overflow-y-auto scrollbar-none shrink-0 w-[92px]">
         {ASSETS_TABS.map((tab) => {
           const Icon = TAB_ICONS[tab.value];
@@ -1582,6 +1584,7 @@ export const AssetsPanel: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* â”€â”€ Body: section content fills the remaining space â”€â”€â”€â”€ */}
       <div className="flex-1 flex flex-col min-w-0 h-full bg-bg-1 relative">
