@@ -218,10 +218,14 @@ export const EditorInterface: React.FC = () => {
     useKeyboardShortcuts();
   useAutoSave();
 
-  const [activeTab, setActiveTab] = useState("assets");
+  const [activeTab, setActiveTab] = useState<string | null>("assets");
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
 
   const activeTool = useUIStore((s) => s.activeTool);
   const setActiveTool = useUIStore((s) => s.setActiveTool);
+
+  // Fullscreen canvas mode
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Floating toolbar drag
   const [toolbarPos, setToolbarPos] = useState({ x: 80, y: 60 });
@@ -441,6 +445,15 @@ export const EditorInterface: React.FC = () => {
     };
   }, []);
 
+  // Esc to exit fullscreen
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsFullscreen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   // Reflect resized panel sizes back into CSS variables so child styles
   // (timeline header padding, etc.) can react.
   useEffect(() => {
@@ -480,7 +493,7 @@ export const EditorInterface: React.FC = () => {
       ref={rootRef}
       className="w-full h-full bg-[#0d0d0d] text-fg overflow-hidden font-sans select-none relative z-20 flex flex-col"
     >
-      <TopNavbar />
+      {!isFullscreen && <TopNavbar />}
 
       {/* Toolbar */}
       <div
@@ -545,18 +558,54 @@ export const EditorInterface: React.FC = () => {
         >
           Media
         </button>
+        <div className="w-px h-8 bg-white/10 mx-1" />
+        <button
+          className="px-2 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          title={isFullscreen ? "Exit fullscreen" : "Fullscreen canvas"}
+        >
+          {isFullscreen ? "Exit FS" : "Fullscreen"}
+        </button>
       </div>
 
 
       <ErrorBoundary fallback={<p className="text-white/50 text-xs p-4">Something went wrong. Try refreshing.</p>}>
-      {/* Main content area */}
+      {isFullscreen ? (
+        /* Fullscreen canvas — only preview */
+        <div className="flex-1 min-h-0 flex">
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex-1 min-h-0 overflow-hidden relative">
+              <PanelErrorBoundary name="Stage">
+                <Preview />
+              </PanelErrorBoundary>
+              <DrawingCanvas />
+              <ShapeCanvas />
+            </div>
+          </div>
+        </div>
+      ) : (
+      /* Normal layout */
       <div className="flex-1 min-h-0 flex">
         {/* Left Icon Rail */}
-        <LeftIconRail activeTab={activeTab} onTabChange={setActiveTab} />
+        <LeftIconRail
+          activeTab={activeTab ?? ""}
+          onTabChange={(tab) => setActiveTab(activeTab === tab ? null : tab)}
+        />
 
         {/* Left Panel - Content switches by tab */}
+        {activeTab && (
         <PanelErrorBoundary name="Left Panel">
-        <div className="h-full overflow-hidden shrink-0 w-80">
+        <div className="h-full overflow-hidden shrink-0 w-80 flex flex-col">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06] shrink-0">
+            <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">{activeTab}</span>
+            <button
+              className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
+              onClick={() => setActiveTab(null)}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
           {activeTab === "assets" && <AssetsPanel />}
           {activeTab === "upload" && <UploadPanel />}
           {activeTab === "text" && <TextPanel />}
@@ -564,8 +613,10 @@ export const EditorInterface: React.FC = () => {
           {activeTab === "pen" && <PenPanel />}
           {activeTab === "menu" && <MenuPanel />}
           {activeTab === "help" && <HelpPanel />}
+          </div>
         </div>
         </PanelErrorBoundary>
+        )}
 
         {/* Center: Preview + Timeline */}
         <div className="flex-1 min-w-0 flex flex-col">
@@ -679,10 +730,23 @@ export const EditorInterface: React.FC = () => {
       </div>
 
         {/* Right Panel - Inspector */}
-        <div className="h-full overflow-hidden shrink-0">
-          <RightPanel />
+        {rightPanelOpen && (
+        <div className="h-full overflow-hidden shrink-0 flex flex-col">
+          <div className="flex items-center justify-end px-2 py-1 border-b border-white/[0.06] shrink-0">
+            <button
+              className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
+              onClick={() => setRightPanelOpen(false)}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <RightPanel />
+          </div>
         </div>
+        )}
       </div>
+      )}
       </ErrorBoundary>
 
       <KeyboardShortcutsOverlay
