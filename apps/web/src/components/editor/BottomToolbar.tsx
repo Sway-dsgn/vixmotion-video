@@ -2,15 +2,6 @@ import React, { useState, useCallback } from "react";
 import {
   Sparkles,
   Layers,
-  Scissors,
-  Trash2,
-  Copy,
-  AlignLeft,
-  PanelBottom,
-  Link2,
-  Snowflake,
-  Bookmark,
-  BarChart2,
   Lock,
   Unlock,
   Maximize2,
@@ -18,10 +9,8 @@ import {
   Plus,
 } from "@/icons/lucide-compat";
 import { useUIStore } from "../../stores/ui-store";
-import { useTimelineStore } from "../../stores/timeline-store";
 import { useProjectStore } from "../../stores/project-store";
 import { useRouter } from "../../hooks/use-router";
-import { toast } from "../../stores/notification-store";
 
 export const BottomToolbar: React.FC = () => {
   const {
@@ -29,11 +18,9 @@ export const BottomToolbar: React.FC = () => {
     toggleTimelineMaximized,
     togglePanel,
     panels,
-    getSelectedClipIds,
   } = useUIStore();
   const beginnerMode = useUIStore((s) => s.beginnerMode);
-  const { playheadPosition } = useTimelineStore();
-  const { createMotionComposition, splitClip, removeClip, duplicateClip } = useProjectStore();
+  const { createMotionComposition } = useProjectStore();
   const { navigate } = useRouter();
 
   const [isLocked, setIsLocked] = useState(false);
@@ -50,35 +37,6 @@ export const BottomToolbar: React.FC = () => {
       setIsCreatingMotion(false);
     }
   }, [createMotionComposition, navigate, isCreatingMotion]);
-
-  const handleEditAction = useCallback(async (action: string) => {
-    const clipIds = getSelectedClipIds();
-    if (clipIds.length === 0) {
-      toast.info("No clip selected", "Select a clip on the timeline first");
-      return;
-    }
-    const clipId = clipIds[0];
-    switch (action) {
-      case "split":
-        await splitClip(clipId, playheadPosition);
-        toast.success("Clip split", "Split at playhead position");
-        break;
-      case "delete":
-        await removeClip(clipId);
-        toast.success("Clip deleted", "Removed from timeline");
-        break;
-      case "duplicate":
-        await duplicateClip(clipId);
-        toast.success("Clip duplicated", "Copy added to timeline");
-        break;
-      default:
-        if (beginnerMode) {
-          toast.info("Try selecting a clip first", "Click a clip on the timeline, then use the toolbar buttons");
-        } else {
-          toast.info(action, "Feature coming soon");
-        }
-    }
-  }, [getSelectedClipIds, splitClip, removeClip, duplicateClip, playheadPosition, beginnerMode]);
 
   return (
     <div className="bg-[#0a0a0a] flex flex-col select-none shrink-0">
@@ -119,7 +77,7 @@ export const BottomToolbar: React.FC = () => {
                 </button>
                 <div className="border-t border-white/10 my-1" />
                 <button onClick={() => { togglePanel("audioMixer"); setShowSceneMenu(false); }} className="w-full px-3 py-2 text-left text-sm text-white/50 hover:bg-white/5 flex items-center gap-2">
-                  <Plus size={14} /> New scene...
+                  <Plus size={14} /> Audio Mixer
                 </button>
               </div>
             </>
@@ -142,22 +100,6 @@ export const BottomToolbar: React.FC = () => {
             <input type="range" min={0} max={100} defaultValue={100} className="w-20 accent-accent" />
           </div>
         )}
-
-        {/* Editing tools */}
-        <ToolBtn icon={<Scissors size={16} />} label="Split (S)" onClick={() => handleEditAction("split")} />
-        <ToolBtn icon={<Trash2 size={16} />} label="Delete (Del)" onClick={() => handleEditAction("delete")} />
-        <ToolBtn icon={<Copy size={16} />} label="Duplicate" onClick={() => handleEditAction("duplicate")} />
-        {!beginnerMode && (
-          <>
-            <ToolBtn icon={<AlignLeft size={16} />} label="Align" onClick={() => handleEditAction("align")} />
-            <ToolBtn icon={<PanelBottom size={16} />} label="Dock" onClick={() => handleEditAction("dock")} />
-            <ToolBtn icon={<Link2 size={16} />} label="Link" onClick={() => handleEditAction("link")} />
-            <ToolBtn icon={<Snowflake size={16} />} label="Freeze" onClick={() => handleEditAction("freeze")} />
-            <ToolBtn icon={<Bookmark size={16} />} label="Bookmark" onClick={() => handleEditAction("bookmark")} />
-            <ToolBtn icon={<BarChart2 size={16} />} label="Graph" onClick={() => handleEditAction("graph")} />
-          </>
-        )}
-        <Divider />
 
         {/* Lock + Resize */}
         <ToolBtn
