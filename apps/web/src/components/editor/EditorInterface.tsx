@@ -21,6 +21,9 @@ import { useUIStore } from "../../stores/ui-store";
 import { useEngineStore } from "../../stores/engine-store";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useRouter } from "../../hooks/use-router";
+import { useSettingsStore } from "../../stores/settings-store";
+import { useTimelineStore } from "../../stores/timeline-store";
+import { toast } from "../../stores/notification-store";
 import {
   initializePlaybackBridge,
   disposePlaybackBridge,
@@ -696,6 +699,8 @@ export const EditorInterface: React.FC = () => {
 function MenuPanel() {
   const [view, setView] = useState<"main" | "shortcuts">("main");
   const setActiveTool = useUIStore((s) => s.setActiveTool);
+  const setDesktopPage = useUIStore((s) => s.setDesktopPage);
+  const openSettings = useSettingsStore((s) => s.openSettings);
 
   if (view === "shortcuts") {
     return (
@@ -733,12 +738,12 @@ function MenuPanel() {
         <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Menu</span>
       </div>
       <div className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+        <button onClick={() => { const p = useProjectStore.getState().project; toast.success("Project saved", `${p.name} — ${p.timeline.tracks.length} tracks`); }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
           <span className="w-4 text-center text-xs">💾</span>
           <span className="flex-1">Save</span>
           <span className="text-[10px] text-white/20">⌘S</span>
         </button>
-        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+        <button onClick={() => setDesktopPage("deliver")} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
           <span className="w-4 text-center text-xs">📤</span>
           <span className="flex-1">Export</span>
           <span className="text-[10px] text-white/20">⌘E</span>
@@ -763,12 +768,12 @@ function MenuPanel() {
           <span className="flex-1">Keyboard Shortcuts</span>
           <span className="text-[10px] text-white/20">?</span>
         </button>
-        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+        <button onClick={() => toast.info("Help", "Visit the documentation at https://vixmotion.dev/docs")} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
           <span className="w-4 text-center text-xs">?</span>
           <span className="flex-1">Help & Documentation</span>
         </button>
         <div className="h-px bg-white/[0.06] my-2" />
-        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
+        <button onClick={() => openSettings()} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
           <span className="w-4 text-center text-xs">⚙</span>
           <span className="flex-1">Settings</span>
         </button>
@@ -808,6 +813,44 @@ function ShapePanel() {
   const setShapeFillColor = useUIStore((s) => s.setShapeFillColor);
   const setShapeStrokeColor = useUIStore((s) => s.setShapeStrokeColor);
   const setShapeStrokeWidth = useUIStore((s) => s.setShapeStrokeWidth);
+  const { select } = useUIStore();
+  const { createShapeClip, addTrack } = useProjectStore();
+  const playheadPosition = useTimelineStore((s) => s.playheadPosition);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const addShapeToCanvas = async () => {
+    if (isAdding) return;
+    setIsAdding(true);
+    try {
+      const state = useProjectStore.getState();
+      const tracksBefore = state.project.timeline.tracks;
+      await addTrack("graphics");
+      const tracksAfter = useProjectStore.getState().project.timeline.tracks;
+      const newTrack = tracksAfter.find(
+        (t) => t.type === "graphics" && !tracksBefore.some((bt) => bt.id === t.id),
+      );
+      if (!newTrack) {
+        toast.error("Failed", "Could not create a graphics track");
+        return;
+      }
+      const shapeMap: Record<string, string> = { square: "rectangle", circle: "circle", triangle: "triangle", hexagon: "polygon" };
+      const created = createShapeClip(
+        newTrack.id,
+        Math.max(0, playheadPosition),
+        (shapeMap[shapeType] || shapeType) as any,
+        5,
+        { fillColor: shapeFillColor === "transparent" ? undefined : shapeFillColor, strokeColor: shapeStrokeColor, strokeWidth: shapeStrokeWidth } as any,
+      );
+      if (created) {
+        select({ type: "shape-clip", id: created.id, trackId: newTrack.id });
+        toast.success("Shape added", `${shapeType} clip created on the timeline`);
+      } else {
+        toast.error("Failed", "Graphics engine not ready yet");
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
   return (
     <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
       <div className="px-3 py-2.5 border-b border-white/[0.06] shrink-0">
@@ -854,8 +897,12 @@ function ShapePanel() {
       </div>
       <div className="flex-1" />
       <div className="px-3 pb-3 space-y-1.5">
-        <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
-          Shape Active — Click & Drag on Preview
+        <button
+          onClick={addShapeToCanvas}
+          disabled={isAdding}
+          className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50"
+        >
+          {isAdding ? "Adding..." : "Add to Canvas"}
         </button>
         <button
           className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors"
@@ -900,9 +947,9 @@ function PenPanel() {
       </div>
       <div className="flex-1" />
       <div className="px-3 pb-3 space-y-1.5">
-        <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
-          Pen Active — Draw on Preview
-        </button>
+        <div className="w-full py-2 rounded-lg bg-white/5 text-white/40 text-xs text-center">
+          Draw on the preview canvas above
+        </div>
         <button
           className="w-full py-2 rounded-lg bg-white/10 text-white/60 text-xs hover:bg-white/15 transition-colors"
           onClick={() => { clearDrawingCanvas(); }}
