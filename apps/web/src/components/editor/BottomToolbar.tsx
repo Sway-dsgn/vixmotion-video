@@ -31,6 +31,7 @@ export const BottomToolbar: React.FC = () => {
     panels,
     getSelectedClipIds,
   } = useUIStore();
+  const beginnerMode = useUIStore((s) => s.beginnerMode);
   const { playheadPosition } = useTimelineStore();
   const { createMotionComposition, splitClip, removeClip, duplicateClip } = useProjectStore();
   const { navigate } = useRouter();
@@ -71,9 +72,13 @@ export const BottomToolbar: React.FC = () => {
         toast.success("Clip duplicated", "Copy added to timeline");
         break;
       default:
-        toast.info(action, "Feature coming soon");
+        if (beginnerMode) {
+          toast.info("Try selecting a clip first", "Click a clip on the timeline, then use the toolbar buttons");
+        } else {
+          toast.info(action, "Feature coming soon");
+        }
     }
-  }, [getSelectedClipIds, splitClip, removeClip, duplicateClip, playheadPosition]);
+  }, [getSelectedClipIds, splitClip, removeClip, duplicateClip, playheadPosition, beginnerMode]);
 
   return (
     <div className="bg-[#0a0a0a] flex flex-col select-none shrink-0">
@@ -130,16 +135,28 @@ export const BottomToolbar: React.FC = () => {
         />
         <Divider />
 
+        {/* Volume slider (beginner mode) */}
+        {beginnerMode && (
+          <div className="flex items-center gap-2 text-white/50">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+            <input type="range" min={0} max={100} defaultValue={100} className="w-20 accent-accent" />
+          </div>
+        )}
+
         {/* Editing tools */}
         <ToolBtn icon={<Scissors size={16} />} label="Split (S)" onClick={() => handleEditAction("split")} />
         <ToolBtn icon={<Trash2 size={16} />} label="Delete (Del)" onClick={() => handleEditAction("delete")} />
-        <ToolBtn icon={<Copy size={16} />} label="Duplicate (Ctrl+D)" onClick={() => handleEditAction("duplicate")} />
-        <ToolBtn icon={<AlignLeft size={16} />} label="Align" onClick={() => handleEditAction("align")} />
-        <ToolBtn icon={<PanelBottom size={16} />} label="Dock" onClick={() => handleEditAction("dock")} />
-        <ToolBtn icon={<Link2 size={16} />} label="Link" onClick={() => handleEditAction("link")} />
-        <ToolBtn icon={<Snowflake size={16} />} label="Freeze" onClick={() => handleEditAction("freeze")} />
-        <ToolBtn icon={<Bookmark size={16} />} label="Bookmark" onClick={() => handleEditAction("bookmark")} />
-        <ToolBtn icon={<BarChart2 size={16} />} label="Graph" onClick={() => handleEditAction("graph")} />
+        <ToolBtn icon={<Copy size={16} />} label="Duplicate" onClick={() => handleEditAction("duplicate")} />
+        {!beginnerMode && (
+          <>
+            <ToolBtn icon={<AlignLeft size={16} />} label="Align" onClick={() => handleEditAction("align")} />
+            <ToolBtn icon={<PanelBottom size={16} />} label="Dock" onClick={() => handleEditAction("dock")} />
+            <ToolBtn icon={<Link2 size={16} />} label="Link" onClick={() => handleEditAction("link")} />
+            <ToolBtn icon={<Snowflake size={16} />} label="Freeze" onClick={() => handleEditAction("freeze")} />
+            <ToolBtn icon={<Bookmark size={16} />} label="Bookmark" onClick={() => handleEditAction("bookmark")} />
+            <ToolBtn icon={<BarChart2 size={16} />} label="Graph" onClick={() => handleEditAction("graph")} />
+          </>
+        )}
         <Divider />
 
         {/* Lock + Resize */}
