@@ -8,6 +8,7 @@ import {
   Lock,
   List,
 } from "@/icons/lucide-compat";
+import { toast } from "../../stores/notification-store";
 
 export const RightPanel: React.FC = () => {
   const [transformExpanded, setTransformExpanded] = useState(true);
@@ -20,6 +21,8 @@ export const RightPanel: React.FC = () => {
   const [blackLevels, setBlackLevels] = useState(14);
   const [volume, setVolume] = useState(50);
   const [exposureOpen, setExposureOpen] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   const SectionHeader = ({
     title,
@@ -98,10 +101,16 @@ export const RightPanel: React.FC = () => {
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/[0.06] shrink-0">
         <span className="text-[13px] font-medium text-white">Untitled</span>
         <div className="flex items-center gap-1">
-          <button className="p-1 rounded text-white/30 hover:text-white/60 transition-colors">
+          <button
+            className="p-1 rounded text-white/30 hover:text-white/60 transition-colors"
+            onClick={() => toast.info("Clip Info", "Select a clip on the timeline to see its properties")}
+          >
             <Info size={12} />
           </button>
-          <button className="p-1 rounded text-white/30 hover:text-white/60 transition-colors">
+          <button
+            className={`p-1 rounded transition-colors ${isPinned ? "text-accent" : "text-white/30 hover:text-white/60"}`}
+            onClick={() => setIsPinned(!isPinned)}
+          >
             <Pin size={12} />
           </button>
         </div>
@@ -121,7 +130,10 @@ export const RightPanel: React.FC = () => {
                 <InputRow label="W" value={1920} />
                 <div className="flex items-center gap-1">
                   <InputRow label="H" value={1080} />
-                  <button className="p-1 text-white/30 hover:text-white/60">
+                  <button
+                    className={`p-1 transition-colors ${isLocked ? "text-accent" : "text-white/30 hover:text-white/60"}`}
+                    onClick={() => setIsLocked(!isLocked)}
+                  >
                     <Lock size={10} />
                   </button>
                 </div>
@@ -170,6 +182,7 @@ export const RightPanel: React.FC = () => {
               <button
                 key={tool.label}
                 className="flex flex-col items-center gap-1 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+                onClick={() => toast.info(tool.label, "Select a clip first, then apply this AI effect from the Effects panel")}
               >
                 <div className="w-6 h-6 rounded bg-white/[0.06] flex items-center justify-center">
                   <div className="w-3 h-3 rounded-sm bg-gradient-to-br from-violet-400 to-pink-400 opacity-50" />

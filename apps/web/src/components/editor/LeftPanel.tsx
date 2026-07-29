@@ -11,6 +11,7 @@ import {
   FolderOpen,
   FileAudio,
 } from "@/icons/lucide-compat";
+import { toast } from "../../stores/notification-store";
 
 interface FileItem {
   name: string;
@@ -141,13 +142,13 @@ export const LeftPanel: React.FC = () => {
             className="flex-1 bg-transparent text-[12px] text-white/70 placeholder:text-white/25 outline-none"
           />
         </div>
-        <button className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors">
+        <button className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors" onClick={() => toast.info("Filter", "Filter by file type — coming soon")}>
           <Filter size={12} />
         </button>
-        <button className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors">
+        <button className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors" onClick={() => toast.info("Sort", "Sort by name or date — coming soon")}>
           <ArrowUpDown size={12} />
         </button>
-        <button className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors">
+        <button className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors" onClick={() => toast.info("More", "More options — coming soon")}>
           <MoreHorizontal size={12} />
         </button>
       </div>
