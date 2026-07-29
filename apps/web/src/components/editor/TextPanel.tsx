@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { Type, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from "@/icons/lucide-compat";
+import { useProjectStore } from "../../stores/project-store";
+import { useTimelineStore } from "../../stores/timeline-store";
+import { useUIStore } from "../../stores/ui-store";
+import { toast } from "../../stores/notification-store";
 
 const fonts = ["Inter", "Roboto", "Arial", "Helvetica", "Georgia", "Courier New", "Times New Roman"];
 const presets = [
@@ -16,6 +20,43 @@ export const TextPanel: React.FC = () => {
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
   const [alignment, setAlignment] = useState<"left" | "center" | "right">("center");
+  const [isAdding, setIsAdding] = useState(false);
+  const playheadPosition = useTimelineStore((s) => s.playheadPosition);
+  const { select } = useUIStore();
+
+  const addTextToCanvas = async () => {
+    if (isAdding) return;
+    setIsAdding(true);
+    try {
+      const state = useProjectStore.getState();
+      const { createTextClip, addTrack } = state;
+      const tracksBefore = state.project.timeline.tracks;
+      await addTrack("text");
+      const tracksAfter = useProjectStore.getState().project.timeline.tracks;
+      const newTrack = tracksAfter.find(
+        (t) => t.type === "text" && !tracksBefore.some((bt) => bt.id === t.id),
+      );
+      if (!newTrack) {
+        toast.error("Failed", "Could not create a text track");
+        return;
+      }
+      const created = createTextClip(
+        newTrack.id,
+        Math.max(0, playheadPosition),
+        "New Text",
+        5,
+        { fontFamily: selectedFont, fontSize, fontWeight: isBold ? 700 : 400, fontStyle: isItalic ? "italic" : "normal", textAlign: alignment, color: "#ffffff" },
+      );
+      if (created) {
+        select({ type: "text-clip", id: created.id, trackId: newTrack.id });
+        toast.success("Text added", "Text clip created on the timeline");
+      } else {
+        toast.error("Failed", "Title engine not ready yet");
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-[#111111] border-r border-white/[0.06]" style={{ width: "240px" }}>
@@ -110,8 +151,12 @@ export const TextPanel: React.FC = () => {
 
       {/* Add text button */}
       <div className="px-3 pb-3">
-        <button className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors">
-          Add Text to Canvas
+        <button
+          onClick={addTextToCanvas}
+          disabled={isAdding}
+          className="w-full py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50"
+        >
+          {isAdding ? "Adding..." : "Add Text to Canvas"}
         </button>
       </div>
     </div>
