@@ -2,8 +2,7 @@
 import {
   Image as ImageIcon, Film, Music, Plus, Upload, Trash2,
   Square, Circle, Triangle, Star, ArrowRight, Hexagon, FileCode, AlertTriangle,
-  RefreshCw, Palette, Sparkles, Video,
-  Type, Shapes, Wand2, LayoutTemplate, Zap, Shuffle,
+  RefreshCw, Palette, Sparkles,
 } from "@/icons/lucide-compat";
 import {
   BACKGROUND_PRESETS,
@@ -23,7 +22,6 @@ import {
   EffectsPanel,
   TransitionsPanel,
 } from "./panels/EffectsTransitionsPanel";
-import { useTtsAudioStore } from "../../stores/tts-store";
 import { toast } from "../../stores/notification-store";
 import { saveFileHandle, saveDirectoryHandle } from "../../services/media-storage";
 import { ToolcraftButton as Button } from "@vixmotion/ui";
@@ -188,17 +186,6 @@ export const TEXT_STYLE_PRESETS: ReadonlyArray<{
     },
   },
 ];
-
-const TAB_ICONS: Record<AssetsTab, React.ElementType> = {
-  media: Video,
-  text: Type,
-  graphics: Shapes,
-  effects: Zap,
-  transitions: Shuffle,
-  ai: Sparkles,
-  recipes: Wand2,
-  templates: LayoutTemplate,
-};
 
 const PanelIconButton: React.FC<{
   label: string;
@@ -627,16 +614,8 @@ const LoadingIndicator: React.FC<{ message: string }> = ({ message }) => (
 
 export const AssetsPanel: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTabRaw] = useState<AssetsTab>("media");
-  const ttsHasUnsaved = useTtsAudioStore((s) => s.generatedAudio !== null && !s.isAudioSaved);
+  const [activeTab] = useState<AssetsTab>("media");
   const playheadPosition = useTimelineStore((state) => state.playheadPosition);
-
-  const setActiveTab = useCallback((tab: AssetsTab) => {
-    if (activeTab === "ai" && tab !== "ai" && ttsHasUnsaved) {
-      toast.warning("Unsaved audio discarded", "Save to media or download next time to keep it.");
-    }
-    setActiveTabRaw(tab);
-  }, [activeTab, ttsHasUnsaved]);
 
   const [isDragOver, setIsDragOver] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -675,7 +654,6 @@ export const AssetsPanel: React.FC = () => {
 
   // UI store
   const { select, isSelected, startDrag, openModal } = useUIStore();
-  const beginnerMode = useUIStore((s) => s.beginnerMode);
 
   // Count missing assets
   const missingAssetsCount = mediaItems.filter(
@@ -1556,35 +1534,6 @@ export const AssetsPanel: React.FC = () => {
       data-tour="assets"
       className="w-full h-full bg-bg-1 overflow-hidden flex flex-row relative"
     >
-      {/* â”€â”€ Vertical tool rail (icon + label, left) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      {!beginnerMode && (
-      <div className="flex flex-col items-center gap-1 px-0 py-[14px] border-r border-border bg-bg-1 overflow-y-auto scrollbar-none shrink-0 w-[92px]">
-        {ASSETS_TABS.map((tab) => {
-          const Icon = TAB_ICONS[tab.value];
-          const isActive = activeTab === tab.value;
-          return (
-            <button
-              key={tab.value}
-              type="button"
-              aria-label={tab.label}
-              aria-pressed={isActive}
-              title={tab.label}
-              onClick={() => setActiveTab(tab.value)}
-              className={`group flex h-16 w-[68px] shrink-0 flex-col items-center justify-center gap-1 rounded-[10px] px-1 py-2 text-[10px] leading-tight tracking-tight transition-colors ${
-                isActive
-                  ? "bg-selected text-accent font-semibold"
-                  : "text-fg-muted font-medium"
-              }`}
-            >
-              <Icon size={20} strokeWidth={isActive ? 1.8 : 1.7} />
-              <span className="block max-w-full text-center leading-[11px]">
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      )}
 
       {/* â”€â”€ Body: section content fills the remaining space â”€â”€â”€â”€ */}
       <div className="flex-1 flex flex-col min-w-0 h-full bg-bg-1 relative">

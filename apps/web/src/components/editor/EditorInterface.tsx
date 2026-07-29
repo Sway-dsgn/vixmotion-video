@@ -3,7 +3,6 @@ import { ToolcraftText as Text } from "@vixmotion/ui";
 import { MousePointer2, Move, Type, Shapes, Pen, Square, Circle, Triangle, Hexagon } from "@/icons/lucide-compat";
 
 import { Preview } from "./Preview";
-import { SeekBar } from "./SeekBar";
 import { RightPanel } from "./RightPanel";
 import { AssetsPanel } from "./AssetsPanel";
 import { UploadPanel } from "./UploadPanel";
@@ -220,7 +219,6 @@ export const EditorInterface: React.FC = () => {
 
   const activeTool = useUIStore((s) => s.activeTool);
   const setActiveTool = useUIStore((s) => s.setActiveTool);
-  const beginnerMode = useUIStore((s) => s.beginnerMode);
 
   // Floating toolbar drag
   const [toolbarPos, setToolbarPos] = useState({ x: 80, y: 60 });
@@ -467,60 +465,6 @@ export const EditorInterface: React.FC = () => {
       <TopNavbar />
 
       {/* Toolbar */}
-      {beginnerMode ? (
-        <div className="flex items-center gap-1 px-3 py-2 bg-[#1a1a1a] border-b border-white/[0.06] shrink-0 overflow-x-auto">
-          {[
-            { id: "select", icon: MousePointer2, label: "Select", desc: "Click to select clips & elements" },
-            { id: "edit", icon: Move, label: "Move", desc: "Drag to reposition clips" },
-            { id: "text", icon: Type, label: "Text", desc: "Add & edit text overlays" },
-            { id: "shape", icon: Shapes, label: "Shape", desc: "Add rectangles, circles & more" },
-            { id: "pen", icon: Pen, label: "Draw", desc: "Freehand drawing on canvas" },
-          ].map((tool) => {
-            const Icon = tool.icon;
-            const isActive = activeTool === tool.id;
-            return (
-              <button
-                key={tool.id}
-                onClick={() => {
-                  setActiveTool(tool.id);
-                  if (["text", "shape", "pen"].includes(tool.id)) setActiveTab(tool.id);
-                }}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-left ${isActive ? "bg-white/15 text-white" : "text-white/50 hover:text-white/70 hover:bg-white/5"}`}
-                title={tool.desc}
-              >
-                <Icon size={16} />
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium leading-tight">{tool.label}</span>
-                  <span className="text-[9px] text-white/30 leading-tight">{tool.desc}</span>
-                </div>
-              </button>
-            );
-          })}
-          <div className="w-px h-8 bg-white/10 mx-2" />
-          <button
-            onClick={() => { setActiveTool("text"); setActiveTab("text"); }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors text-xs"
-            title="Add text to your video"
-          >
-            <Type size={14} /> <span>Add Text</span>
-          </button>
-          <button
-            onClick={() => { setActiveTool("shape"); setActiveTab("shape"); }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors text-xs"
-            title="Add shapes like rectangles and circles"
-          >
-            <Shapes size={14} /> <span>Add Shape</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("assets")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors text-xs"
-            title="Browse your uploaded media files"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-            <span>Media Library</span>
-          </button>
-        </div>
-      ) : (
       <div
         className="fixed z-50 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 shadow-2xl select-none cursor-grab active:cursor-grabbing"
         style={{ left: toolbarPos.x, top: toolbarPos.y }}
@@ -584,13 +528,13 @@ export const EditorInterface: React.FC = () => {
           Media
         </button>
       </div>
-      )}
+
 
       <ErrorBoundary fallback={<p className="text-white/50 text-xs p-4">Something went wrong. Try refreshing.</p>}>
       {/* Main content area */}
       <div className="flex-1 min-h-0 flex">
         {/* Left Icon Rail */}
-        <LeftIconRail activeTab={activeTab} onTabChange={setActiveTab} beginnerMode={beginnerMode} />
+        <LeftIconRail activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Left Panel - Content switches by tab */}
         <PanelErrorBoundary name="Left Panel">
@@ -615,9 +559,6 @@ export const EditorInterface: React.FC = () => {
             <DrawingCanvas />
             <ShapeCanvas />
           </div>
-
-          {/* Seek bar */}
-          {!beginnerMode && <SeekBar />}
 
           {/* Bottom toolbar above timeline */}
           <div className="shrink-0">
@@ -705,8 +646,6 @@ export const EditorInterface: React.FC = () => {
 function MenuPanel() {
   const [view, setView] = useState<"main" | "shortcuts">("main");
   const setActiveTool = useUIStore((s) => s.setActiveTool);
-  const beginnerMode = useUIStore((s) => s.beginnerMode);
-  const setBeginnerMode = useUIStore((s) => s.setBeginnerMode);
 
   if (view === "shortcuts") {
     return (
@@ -779,15 +718,6 @@ function MenuPanel() {
           <span className="flex-1">Help & Documentation</span>
         </button>
         <div className="h-px bg-white/[0.06] my-2" />
-        <div className="px-3 py-2 flex items-center justify-between">
-          <span className="text-sm text-white/60">Beginner Mode</span>
-          <button
-            onClick={() => setBeginnerMode(!beginnerMode)}
-            className={`relative w-10 h-5 rounded-full transition-colors ${beginnerMode ? "bg-accent" : "bg-white/20"}`}
-          >
-            <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${beginnerMode ? "translate-x-5 left-0.5" : "translate-x-0.5 left-0"}`} />
-          </button>
-        </div>
         <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors text-left">
           <span className="w-4 text-center text-xs">⚙</span>
           <span className="flex-1">Settings</span>
