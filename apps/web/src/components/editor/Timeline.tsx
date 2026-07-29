@@ -732,11 +732,17 @@ export const Timeline: React.FC = () => {
 
   const handleDropMedia = useCallback(
     async (trackId: string, mediaId: string, startTime: number) => {
-      const { addClip, addClipToNewTrack } = useProjectStore.getState();
+      const store = useProjectStore.getState();
+      // Prevent adding the same mediaId to the same track more than once
       if (trackId) {
-        await addClip(trackId, mediaId, startTime);
+        const track = store.project.timeline.tracks.find((t) => t.id === trackId);
+        if (track && track.clips.some((c) => c.mediaId === mediaId)) {
+          toast.info("Already on this track", "Drag an existing clip on the timeline to move it");
+          return; // already on this track — skip duplicate
+        }
+        await store.addClip(trackId, mediaId, startTime);
       } else {
-        await addClipToNewTrack(mediaId, startTime);
+        await store.addClipToNewTrack(mediaId, startTime);
       }
     },
     [],
