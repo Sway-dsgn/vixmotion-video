@@ -30,16 +30,15 @@ export function createClipSlice(set: Set, get: Get): ClipSlice {
   return {
     addClip: async (trackId: string, mediaId: string, startTime: number) => {
       const { project, actionExecutor } = get();
-      const projectCopy = structuredClone(project);
       const action: Action = {
         type: "clip/add",
         id: uuidv4(),
         timestamp: Date.now(),
         params: { trackId, mediaId, startTime },
       };
-      const result = await actionExecutor.execute(action, projectCopy);
+      const result = await actionExecutor.execute(action, project);
       if (result.success) {
-        set({ project: { ...projectCopy, modifiedAt: Date.now() } });
+        set({ project: { ...project, modifiedAt: Date.now() } });
       }
       return result;
     },
@@ -83,16 +82,15 @@ export function createClipSlice(set: Set, get: Get): ClipSlice {
         };
       }
 
-      const projectCopy = structuredClone(updatedProject);
       const action: Action = {
         type: "clip/add",
         id: uuidv4(),
         timestamp: Date.now(),
         params: { trackId: newTrack.id, mediaId, startTime: clipStartTime },
       };
-      const result = await exec.execute(action, projectCopy);
+      const result = await exec.execute(action, updatedProject);
       if (result.success) {
-        set({ project: { ...projectCopy, modifiedAt: Date.now() } });
+        set({ project: { ...updatedProject, modifiedAt: Date.now() } });
       }
       return result;
     },

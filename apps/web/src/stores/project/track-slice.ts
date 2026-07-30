@@ -25,17 +25,16 @@ export function createTrackSlice(set: Set, get: Get): TrackSlice {
   return {
     addTrack: async (trackType, position) => {
       const { project, actionExecutor } = get();
-      const projectCopy = structuredClone(project);
       const action: Action = {
         type: "track/add",
         id: uuidv4(),
         timestamp: Date.now(),
         params: { trackType, position },
       };
-      const result = await actionExecutor.execute(action, projectCopy);
+      const result = await actionExecutor.execute(action, project);
       if (result.success) {
         const finalProject: Project = {
-          ...projectCopy,
+          ...project,
           modifiedAt: Date.now(),
         };
         set({ project: finalProject });
@@ -54,16 +53,15 @@ export function createTrackSlice(set: Set, get: Get): TrackSlice {
           error: { code: "TRACK_NOT_FOUND", message: "Track not found" },
         };
       }
-      const projectCopy = structuredClone(project);
       const action: Action = {
         type: "track/duplicate",
         id: uuidv4(),
         timestamp: Date.now(),
         params: { sourceTrackId: trackId, position: sourceIndex + 1 },
       };
-      const result = await actionExecutor.execute(action, projectCopy);
+      const result = await actionExecutor.execute(action, project);
       if (result.success) {
-        set({ project: { ...projectCopy, modifiedAt: Date.now() } });
+        set({ project: { ...project, modifiedAt: Date.now() } });
       }
       return result;
     },
