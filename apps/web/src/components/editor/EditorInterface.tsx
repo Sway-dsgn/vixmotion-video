@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ToolcraftText as Text } from "@vixmotion/ui";
-import { MousePointer2, Move, Type, Shapes, Pen, Square, Circle, Triangle, Hexagon } from "@/icons/lucide-compat";
+import { MousePointer2, Move, Type, Shapes, Pen, Square, Circle, Triangle, Hexagon, Layers } from "@/icons/lucide-compat";
 
 import { Preview } from "./Preview";
 import { RightPanel } from "./RightPanel";
@@ -20,6 +20,7 @@ import { useProjectStore } from "../../stores/project-store";
 import { useUIStore } from "../../stores/ui-store";
 import { useEngineStore } from "../../stores/engine-store";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
+import { useRouter } from "../../hooks/use-router";
 import { useSettingsStore } from "../../stores/settings-store";
 import { useTimelineStore } from "../../stores/timeline-store";
 import { toast } from "../../stores/notification-store";
@@ -223,6 +224,41 @@ export const EditorInterface: React.FC = () => {
   const activeTool = useUIStore((s) => s.activeTool);
   const setActiveTool = useUIStore((s) => s.setActiveTool);
 
+  // Floating toolbar drag
+  const [toolbarPos, setToolbarPos] = useState({ x: 80, y: 60 });
+  const [isLocked, setIsLocked] = useState(false);
+  const [isCreatingMotion, setIsCreatingMotion] = useState(false);
+  const dragState = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
+  const posRef = useRef(toolbarPos);
+  posRef.current = toolbarPos;
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const ds = dragState.current;
+      if (!ds.dragging) return;
+      setToolbarPos({
+        x: ds.startPosX + (e.clientX - ds.startX),
+        y: ds.startPosY + (e.clientY - ds.startY),
+      });
+    };
+    const onUp = () => {
+      dragState.current.dragging = false;
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, []);
+
+  const onToolbarMouseDown = useCallback((e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    const p = posRef.current;
+    dragState.current = { dragging: true, startX: e.clientX, startY: e.clientY, startPosX: p.x, startPosY: p.y };
+  }, []);
+  const { navigate } = useRouter();
+
   const {
     keyframeEditorOpen,
     setKeyframeEditorOpen,
@@ -230,14 +266,26 @@ export const EditorInterface: React.FC = () => {
     panels,
     setPanelVisible,
     timelineMaximized,
+    toggleTimelineMaximized,
   } = useUIStore();
-  const { project, updateClipKeyframes } = useProjectStore();
+  const { project, updateClipKeyframes, createMotionComposition } = useProjectStore();
   const tracks = project.timeline.tracks;
 
   const [selectedKeyframeIds, setSelectedKeyframeIds] = React.useState<string[]>([]);
   const [copiedKeyframes, setCopiedKeyframes] = React.useState<
     import("@vixmotion/core").Keyframe[]
   >([]);
+
+  const handleCreateMotion = useCallback(async () => {
+    if (isCreatingMotion) return;
+    setIsCreatingMotion(true);
+    try {
+      const composition = await createMotionComposition("Motion Scene");
+      if (composition) navigate("motion", { compositionId: composition.id });
+    } finally {
+      setIsCreatingMotion(false);
+    }
+  }, [createMotionComposition, navigate, isCreatingMotion]);
 
   const selectedClip = React.useMemo(() => {
     const selectedIds = getSelectedClipIds();
@@ -437,7 +485,9 @@ export const EditorInterface: React.FC = () => {
 
       {/* Toolbar */}
       <div
-        className="flex items-center gap-1 px-2.5 py-1.5 mx-auto mt-2 rounded-xl bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 shadow-2xl select-none"
+        className="fixed z-50 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 shadow-2xl select-none cursor-grab active:cursor-grabbing"
+        style={{ left: toolbarPos.x, top: toolbarPos.y }}
+        onMouseDown={onToolbarMouseDown}
       >
         {[
           { id: "select", icon: MousePointer2, name: "Select" },
@@ -543,6 +593,46 @@ export const EditorInterface: React.FC = () => {
             </PanelErrorBoundary>
             <DrawingCanvas />
             <ShapeCanvas />
+          </div>
+
+          {/* Tool controls strip */}
+          <div className="shrink-0 flex items-center gap-3 px-3 py-1 border-t border-white/[0.06] bg-[#0a0a0a]">
+            <button
+              onClick={() => setIsLocked(!isLocked)}
+              className={`p-1 rounded transition-colors ${isLocked ? "text-accent" : "text-white/40 hover:text-white/70"}`}
+              title={isLocked ? "Unlock" : "Lock"}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </button>
+            <button
+              onClick={toggleTimelineMaximized}
+              className="p-1 rounded text-white/40 hover:text-white/70 transition-colors"
+              title={timelineMaximized ? "Restore" : "Maximize"}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {timelineMaximized
+                  ? <><polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" /><line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" /></>
+                  : <><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></>
+                }
+              </svg>
+            </button>
+            <div className="w-px h-4 bg-white/10" />
+            <div className="flex items-center gap-1.5 text-white/40">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              <input type="range" min={0} max={100} defaultValue={100} className="w-16 accent-accent h-1" />
+            </div>
+            <div className="flex-1" />
+            <button
+              onClick={handleCreateMotion}
+              className="px-2 py-0.5 rounded text-[10px] font-medium text-accent hover:bg-accent/10 transition-colors"
+              title="Create a motion composition"
+            >
+              Motion
+            </button>
+            <div className="flex items-center gap-1 text-[10px] text-white/30">
+              <Layers size={10} />
+              Main scene
+            </div>
           </div>
 
           {/* Timeline resize handle */}
