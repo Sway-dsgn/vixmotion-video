@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, memo } from "react";
 import { ToolcraftText as Text } from "@vixmotion/ui";
 import { MousePointer2, Move, Type, Shapes, Pen, Square, Circle, Triangle, Hexagon, Layers } from "@/icons/lucide-compat";
 
@@ -44,6 +44,9 @@ import {
   initializeTransitionBridge,
   disposeTransitionBridge,
 } from "../../bridges/transition-bridge";
+
+const MemoPreview = memo(Preview);
+const MemoTimeline = memo(Timeline);
 
 
 
@@ -268,7 +271,9 @@ export const EditorInterface: React.FC = () => {
     timelineMaximized,
     toggleTimelineMaximized,
   } = useUIStore();
-  const { project, updateClipKeyframes, createMotionComposition } = useProjectStore();
+  const project = useProjectStore((s) => s.project);
+  const updateClipKeyframes = useProjectStore((s) => s.updateClipKeyframes);
+  const createMotionComposition = useProjectStore((s) => s.createMotionComposition);
   const tracks = project.timeline.tracks;
 
   const [selectedKeyframeIds, setSelectedKeyframeIds] = React.useState<string[]>([]);
@@ -563,7 +568,7 @@ export const EditorInterface: React.FC = () => {
           {/* Preview + overlay panels row */}
           <div className="flex-1 min-h-0 overflow-hidden relative">
             <PanelErrorBoundary name="Stage">
-              <Preview />
+              <MemoPreview />
             </PanelErrorBoundary>
             <DrawingCanvas />
             <ShapeCanvas />
@@ -687,7 +692,7 @@ export const EditorInterface: React.FC = () => {
             <div className="flex-1 min-h-0 flex">
               <div className="flex-1 min-w-0 min-h-0">
                 <PanelErrorBoundary name="Timeline">
-                  <Timeline />
+                  <MemoTimeline />
                 </PanelErrorBoundary>
               </div>
 
