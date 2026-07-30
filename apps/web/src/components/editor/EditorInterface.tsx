@@ -560,13 +560,56 @@ export const EditorInterface: React.FC = () => {
 
         {/* Center: Preview + Timeline */}
         <div className="flex-1 min-w-0 flex flex-col">
-          {/* Preview */}
+          {/* Preview + overlay panels row */}
           <div className="flex-1 min-h-0 overflow-hidden relative">
             <PanelErrorBoundary name="Stage">
               <Preview />
             </PanelErrorBoundary>
             <DrawingCanvas />
             <ShapeCanvas />
+
+            {/* Left Panel - popup overlay on preview only */}
+            <div className={`absolute left-0 top-0 bottom-0 z-20 transition-transform duration-200 ${activeTab ? "translate-x-0" : "-translate-x-full"}`}>
+              <PanelErrorBoundary name="Left Panel">
+              <div className="h-full w-80 flex flex-col bg-[#111111] border-r border-white/[0.06] shadow-2xl">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06] shrink-0">
+                  <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">{activeTab ?? ""}</span>
+                  <button
+                    className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
+                    onClick={() => setActiveTab(null)}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                {activeTab === "assets" && <AssetsPanel />}
+                {activeTab === "upload" && <UploadPanel />}
+                {activeTab === "text" && <TextPanel />}
+                {activeTab === "shape" && <ShapePanel />}
+                {activeTab === "pen" && <PenPanel />}
+                {activeTab === "menu" && <MenuPanel />}
+                {activeTab === "help" && <HelpPanel />}
+                </div>
+              </div>
+              </PanelErrorBoundary>
+            </div>
+
+            {/* Right Panel - popup overlay on preview only */}
+            <div className={`absolute right-0 top-0 bottom-0 z-20 transition-transform duration-200 ${rightPanelOpen ? "translate-x-0" : "translate-x-full"}`}>
+              <div className="h-full w-[220px] flex flex-col bg-[#111111] border-l border-white/[0.06] shadow-2xl">
+                <div className="flex items-center justify-end px-2 py-1 border-b border-white/[0.06] shrink-0">
+                  <button
+                    className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
+                    onClick={() => setRightPanelOpen(false)}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <RightPanel />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Tool controls strip */}
@@ -665,49 +708,6 @@ export const EditorInterface: React.FC = () => {
                   </PanelErrorBoundary>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Left Panel - overlay */}
-        <div className={`absolute left-[72px] top-0 bottom-0 z-20 transition-[width] duration-200 ${activeTab ? "w-80" : "w-0"}`}>
-          <PanelErrorBoundary name="Left Panel">
-          <div className="h-full w-80 flex flex-col bg-[#111111] border-r border-white/[0.06] overflow-hidden">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06] shrink-0">
-              <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">{activeTab ?? ""}</span>
-              <button
-                className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
-                onClick={() => setActiveTab(null)}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-            {activeTab === "assets" && <AssetsPanel />}
-            {activeTab === "upload" && <UploadPanel />}
-            {activeTab === "text" && <TextPanel />}
-            {activeTab === "shape" && <ShapePanel />}
-            {activeTab === "pen" && <PenPanel />}
-            {activeTab === "menu" && <MenuPanel />}
-            {activeTab === "help" && <HelpPanel />}
-            </div>
-          </div>
-          </PanelErrorBoundary>
-        </div>
-
-        {/* Right Panel - overlay */}
-        <div className={`absolute right-0 top-0 bottom-0 z-20 transition-[width] duration-200 ${rightPanelOpen ? "w-[220px]" : "w-0"}`}>
-          <div className="h-full w-[220px] flex flex-col bg-[#111111] border-l border-white/[0.06] overflow-hidden">
-            <div className="flex items-center justify-end px-2 py-1 border-b border-white/[0.06] shrink-0">
-              <button
-                className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
-                onClick={() => setRightPanelOpen(false)}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <RightPanel />
             </div>
           </div>
         </div>
