@@ -224,9 +224,6 @@ export const EditorInterface: React.FC = () => {
   const activeTool = useUIStore((s) => s.activeTool);
   const setActiveTool = useUIStore((s) => s.setActiveTool);
 
-  // Fullscreen canvas mode
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
   // Floating toolbar drag
   const [toolbarPos, setToolbarPos] = useState({ x: 80, y: 60 });
   const [isLocked, setIsLocked] = useState(false);
@@ -445,15 +442,6 @@ export const EditorInterface: React.FC = () => {
     };
   }, []);
 
-  // Esc to exit fullscreen
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsFullscreen(false);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
   // Reflect resized panel sizes back into CSS variables so child styles
   // (timeline header padding, etc.) can react.
   useEffect(() => {
@@ -493,7 +481,7 @@ export const EditorInterface: React.FC = () => {
       ref={rootRef}
       className="w-full h-full bg-[#0d0d0d] text-fg overflow-hidden font-sans select-none relative z-20 flex flex-col"
     >
-      {!isFullscreen && <TopNavbar />}
+      <TopNavbar />
 
       {/* Toolbar */}
       <div
@@ -559,32 +547,10 @@ export const EditorInterface: React.FC = () => {
           Media
         </button>
         <div className="w-px h-8 bg-white/10 mx-1" />
-        <button
-          className="px-2 h-7 rounded-lg text-[10px] font-medium text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
-          onClick={() => setIsFullscreen(!isFullscreen)}
-          title={isFullscreen ? "Exit fullscreen" : "Fullscreen canvas"}
-        >
-          {isFullscreen ? "Exit FS" : "Fullscreen"}
-        </button>
       </div>
 
 
       <ErrorBoundary fallback={<p className="text-white/50 text-xs p-4">Something went wrong. Try refreshing.</p>}>
-      {isFullscreen ? (
-        /* Fullscreen canvas — only preview */
-        <div className="flex-1 min-h-0 flex">
-          <div className="flex-1 min-w-0 flex flex-col">
-            <div className="flex-1 min-h-0 overflow-hidden relative">
-              <PanelErrorBoundary name="Stage">
-                <Preview />
-              </PanelErrorBoundary>
-              <DrawingCanvas />
-              <ShapeCanvas />
-            </div>
-          </div>
-        </div>
-      ) : (
-      /* Normal layout */
       <div className="flex-1 min-h-0 flex">
         {/* Left Icon Rail */}
         <LeftIconRail
@@ -746,7 +712,6 @@ export const EditorInterface: React.FC = () => {
         </div>
         )}
       </div>
-      )}
       </ErrorBoundary>
 
       <KeyboardShortcutsOverlay
