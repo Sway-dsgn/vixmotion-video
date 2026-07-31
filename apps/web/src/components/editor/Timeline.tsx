@@ -98,6 +98,10 @@ export const Timeline: React.FC = () => {
   const suppressNextBackgroundClickRef = useRef(false);
   const trackDragPointerYRef = useRef<number | null>(null);
   const trackDragAutoScrollFrameRef = useRef<number | null>(null);
+  const pendingKeyframeMoveRef = useRef<{
+    keyframeId: string;
+    newTime: number;
+  } | null>(null);
 
   const {
     project,
@@ -520,19 +524,38 @@ export const Timeline: React.FC = () => {
 
   const handleKeyframeMove = useCallback(
     (keyframeId: string, newTime: number) => {
-      for (const track of tracks) {
-        for (const clip of track.clips) {
-          const keyframe = clip.keyframes?.find((kf) => kf.id === keyframeId);
-          if (keyframe) {
-            const updatedKeyframes = clip.keyframes?.map((kf) =>
-              kf.id === keyframeId ? { ...kf, time: Math.max(0, newTime) } : kf
-            );
-            if (updatedKeyframes) {
-              updateClipKeyframes(clip.id, updatedKeyframes);
+      // Coalesce rapid marker drags to one store commit per animation
+      // frame. KeyframeMarker fires on every mousemove, and each commit
+      // rebuilds the project object and re-renders every store subscriber.
+      const pending = pendingKeyframeMoveRef.current;
+      if (!pending) {
+        pendingKeyframeMoveRef.current = { keyframeId, newTime };
+        requestAnimationFrame(() => {
+          const flush = pendingKeyframeMoveRef.current;
+          pendingKeyframeMoveRef.current = null;
+          if (!flush) return;
+          for (const track of tracks) {
+            for (const clip of track.clips) {
+              const keyframe = clip.keyframes?.find(
+                (kf) => kf.id === flush.keyframeId,
+              );
+              if (keyframe) {
+                const updatedKeyframes = clip.keyframes?.map((kf) =>
+                  kf.id === flush.keyframeId
+                    ? { ...kf, time: Math.max(0, flush.newTime) }
+                    : kf,
+                );
+                if (updatedKeyframes) {
+                  updateClipKeyframes(clip.id, updatedKeyframes);
+                }
+                return;
+              }
             }
-            return;
           }
-        }
+        });
+      } else {
+        pending.keyframeId = keyframeId;
+        pending.newTime = newTime;
       }
     },
     [tracks, updateClipKeyframes]

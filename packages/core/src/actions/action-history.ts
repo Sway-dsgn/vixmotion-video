@@ -108,6 +108,7 @@ const AUTO_GROUPABLE_TYPES = new Set<string>([
   "clip/setStabilization",
   "keyframe/move",
   "keyframe/update",
+  "motion/upsertComposition",
   "project/updateSettings",
   "project/setCanvasBackground",
 ]);
@@ -131,6 +132,10 @@ function getActionTargetId(action: Action): string | null {
       return value;
     }
   }
+  const composition = params.composition as { id?: unknown } | undefined;
+  if (composition && typeof composition.id === "string" && composition.id.length > 0) {
+    return composition.id;
+  }
   return null;
 }
 
@@ -139,6 +144,7 @@ export class ActionHistory {
   private redoStack: HistoryEntry[] = [];
   private maxHistorySize: number;
   private currentGroupId: string | null = null;
+  private groupSnapshotTargets: Set<string> | null = null;
   private snapshots: HistorySnapshot[] = [];
   private listeners: Set<() => void> = new Set();
   private lastActionTime: number = 0;
@@ -174,6 +180,31 @@ export class ActionHistory {
     const lastTarget = getActionTargetId(lastEntry.action);
     const currentTarget = getActionTargetId(action);
     return lastTarget !== null && lastTarget === currentTarget;
+  }
+
+  /**
+   * Decides whether execute() can skip generating an undo snapshot for the
+   * next action. Returns true when either:
+   * - The action will auto-group with the previous entry (rapid burst of
+   *   updates to the same target), or
+   * - An explicit history group is open and the action is a repeat update
+   *   to a target already snapshotted inside that group (e.g. per-frame
+   *   moves of the same clip during a timeline drag).
+   * The first entry of a group always captures the pre-group state, so its
+   * inverse restores that target regardless of how many later actions in
+   * the group update it. Non-groupable actions (adds, splits, removes…)
+   * always get their own snapshot so compound group undos stay exact.
+   */
+  shouldSkipSnapshot(action: Action, now: number): boolean {
+    if (this.wouldAutoGroup(action, now)) return true;
+    if (!this.currentGroupId || !this.groupSnapshotTargets) return false;
+    if (!AUTO_GROUPABLE_TYPES.has(action.type)) return false;
+    const target = getActionTargetId(action);
+    if (target === null) return false;
+    const key = `${action.type}:${target}`;
+    if (this.groupSnapshotTargets.has(key)) return true;
+    this.groupSnapshotTargets.add(key);
+    return false;
   }
 
   push(
@@ -240,11 +271,13 @@ export class ActionHistory {
 
   beginGroup(_description?: string): string {
     this.currentGroupId = `group-${Date.now()}`;
+    this.groupSnapshotTargets = new Set();
     return this.currentGroupId;
   }
 
   endGroup(): void {
     this.currentGroupId = null;
+    this.groupSnapshotTargets = null;
     this.notify();
   }
 
@@ -385,6 +418,7 @@ export class ActionHistory {
     this.redoStack = [];
     this.snapshots = [];
     this.currentGroupId = null;
+    this.groupSnapshotTargets = null;
     this.notify();
   }
 

@@ -57,7 +57,7 @@ export function createProjectStoreHelpers(
   get: Get,
 ): ProjectStoreHelpers {
   const cloneClipSnapshot = <T,>(clip: T): T =>
-    JSON.parse(JSON.stringify(clip)) as T;
+    structuredClone(clip) as T;
 
   const overlayList = (
     project: Project,

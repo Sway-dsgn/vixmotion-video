@@ -227,6 +227,111 @@ describe("ActionExecutor auto-group snapshot skipping", () => {
   });
 });
 
+describe("ActionExecutor explicit group snapshot skipping", () => {
+  it("snapshots each dragged clip once inside a beginGroup drag", async () => {
+    const executor = new ActionExecutor();
+    const project = makeProjectWithClip();
+    project.timeline.tracks[0].clips.push({
+      ...project.timeline.tracks[0].clips[0],
+      id: "c2",
+    });
+    const getStart = (clipId: string) =>
+      project.timeline.tracks[0].clips.find((c) => c.id === clipId)?.startTime;
+
+    executor.getHistory().beginGroup("Move clips");
+    // Simulate two interleaved per-frame moves across two selected clips.
+    const frames = [
+      ["c1", 1],
+      ["c2", 1],
+      ["c1", 2],
+      ["c2", 2],
+      ["c1", 3],
+      ["c2", 3],
+    ] as const;
+    for (const [i, [clipId, startTime]] of frames.entries()) {
+      const result = await executor.execute(
+        {
+          id: `move-${i}`,
+          type: "clip/move",
+          params: { clipId, startTime },
+          timestamp: Date.now(),
+        } as unknown as Action,
+        project,
+      );
+      expect(result.success).toBe(true);
+    }
+    executor.getHistory().endGroup();
+
+    const entries = executor.getHistory().getHistoryEntries();
+    expect(entries).toHaveLength(6);
+    // Only the first move of each clip captured a snapshot.
+    const withInverse = entries.filter((e) => e.inverseAction !== null);
+    expect(withInverse.map((e) => e.action.id)).toEqual(["move-0", "move-1"]);
+
+    // One undo restores both clips to their pre-group positions.
+    const undo = await executor.undo(project);
+    expect(undo.success).toBe(true);
+    expect(getStart("c1")).toBe(0);
+    expect(getStart("c2")).toBe(0);
+
+    // Redo replays the whole burst back to its final positions.
+    const redo = await executor.redo(project);
+    expect(redo.success).toBe(true);
+    expect(getStart("c1")).toBe(3);
+    expect(getStart("c2")).toBe(3);
+  });
+});
+
+describe("ActionExecutor motion slider auto-grouping", () => {
+  it("auto-groups rapid motion/upsertComposition updates and restores on undo", async () => {
+    const executor = new ActionExecutor();
+    const project = makeProject();
+    const upsert = (id: string, value: number): Action =>
+      ({
+        id,
+        type: "motion/upsertComposition",
+        params: {
+          composition: {
+            id: "motion-1",
+            name: `Comp-${value}`,
+            width: 1920,
+            height: 1080,
+            frameRate: 30,
+            duration: 5,
+            backgroundColor: "#000000",
+            layers: [],
+            assets: [],
+            variables: [],
+            markers: [],
+            createdAt: 0,
+            modifiedAt: Date.now(),
+          },
+        },
+        timestamp: Date.now(),
+      }) as unknown as Action;
+
+    for (const [i, value] of [0.2, 0.4, 0.6, 0.8].entries()) {
+      const result = await executor.execute(upsert(`up-${i}`, value), project);
+      expect(result.success).toBe(true);
+    }
+
+    const entries = executor.getHistory().getHistoryEntries();
+    expect(entries).toHaveLength(4);
+    // Same composition target -> grouped; only the first holds an inverse.
+    expect(entries[0].groupId).toBeDefined();
+    expect(entries.slice(1).every((e) => e.inverseAction === null)).toBe(true);
+
+    const undo = await executor.undo(project);
+    expect(undo.success).toBe(true);
+    expect(project.motionCompositions).toHaveLength(0);
+
+    const redo = await executor.redo(project);
+    expect(redo.success).toBe(true);
+    const composition = project.motionCompositions?.[0];
+    expect(composition?.name).toBe("Comp-0.8");
+  });
+});
+
 describe("ActionExecutor transform/update", () => {
   it("deep-merges a partial axis (does not drop the other) and round-trips", async () => {
     const executor = new ActionExecutor();

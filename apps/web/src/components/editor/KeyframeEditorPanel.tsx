@@ -74,6 +74,11 @@ export const KeyframeEditorPanel: React.FC<KeyframeEditorPanelProps> = ({
 }) => {
   const [activeProperty, setActiveProperty] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pendingKeyframeMoveRef = useRef<{
+    keyframeId: string;
+    newTime: number;
+    newValue: number;
+  } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragKeyframeId, setDragKeyframeId] = useState<string | null>(null);
   const graphWidth = 600;
@@ -328,24 +333,49 @@ export const KeyframeEditorPanel: React.FC<KeyframeEditorPanelProps> = ({
       const newTime = Math.max(0, xToTime(x));
       const newValue = yToValue(y);
 
-      onUpdateKeyframe(dragKeyframeId, { time: newTime, value: newValue });
+      // Coalesce per-event updates to one store commit per animation
+      // frame; each commit rebuilds the project and re-renders subscribers.
+      const pending = pendingKeyframeMoveRef.current;
+      if (!pending) {
+        pendingKeyframeMoveRef.current = { keyframeId: dragKeyframeId, newTime, newValue };
+        requestAnimationFrame(() => {
+          const flush = pendingKeyframeMoveRef.current;
+          pendingKeyframeMoveRef.current = null;
+          if (flush) onUpdateKeyframe(flush.keyframeId, { time: flush.newTime, value: flush.newValue });
+        });
+      } else {
+        pending.keyframeId = dragKeyframeId;
+        pending.newTime = newTime;
+        pending.newValue = newValue;
+      }
     },
     [isDragging, dragKeyframeId, activeGroup, xToTime, yToValue, onUpdateKeyframe]
   );
 
   const handleCanvasMouseUp = useCallback(() => {
+    // Flush any RAF-coalesced move so the final position is committed.
+    const flush = pendingKeyframeMoveRef.current;
+    pendingKeyframeMoveRef.current = null;
+    if (flush) {
+      onUpdateKeyframe(flush.keyframeId, { time: flush.newTime, value: flush.newValue });
+    }
     setIsDragging(false);
     setDragKeyframeId(null);
-  }, []);
+  }, [onUpdateKeyframe]);
 
   useEffect(() => {
     const handleGlobalMouseUp = () => {
+      const flush = pendingKeyframeMoveRef.current;
+      pendingKeyframeMoveRef.current = null;
+      if (flush) {
+        onUpdateKeyframe(flush.keyframeId, { time: flush.newTime, value: flush.newValue });
+      }
       setIsDragging(false);
       setDragKeyframeId(null);
     };
     window.addEventListener("mouseup", handleGlobalMouseUp);
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
-  }, []);
+  }, [onUpdateKeyframe]);
 
   const handleCopy = useCallback(() => {
     onCopyKeyframes(selectedKeyframeIds);

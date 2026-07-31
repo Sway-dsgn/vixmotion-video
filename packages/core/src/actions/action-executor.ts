@@ -101,9 +101,9 @@ export class ActionExecutor {
     // group needs a project snapshot, since its inverse restores the
     // whole pre-group state. Skipping the deep clone for the rest turns
     // a full-project clone per frame into a single clone per gesture.
-    const willAutoGroup = this.history.wouldAutoGroup(action, now);
+    const skipSnapshot = this.history.shouldSkipSnapshot(action, now);
     let inverseAction: Action | null = null;
-    if (!willAutoGroup) {
+    if (!skipSnapshot) {
       const projectSnapshot = structuredClone(project);
       inverseAction = this.inverseGenerator.generate(
         action,
