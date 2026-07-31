@@ -3186,26 +3186,24 @@ export const useProjectStore = create<ProjectState>()(
               frameRate: project.settings.frameRate,
             });
 
-        const projectCopy = structuredClone(project);
         const action: Action = {
           type: "motion/createComposition",
           id: uuidv4(),
           timestamp: Date.now(),
           params: { composition },
         };
-        const result = await actionExecutor.execute(action, projectCopy);
+        const result = await actionExecutor.execute(action, project);
         if (!result.success) {
           console.error("Failed to create motion composition:", result.error?.message);
           return null;
         }
 
-        set({ project: { ...projectCopy, modifiedAt: Date.now() } });
+        set({ project: { ...project, modifiedAt: Date.now() } });
         return composition;
       },
 
       upsertMotionComposition: async (composition: MotionComposition) => {
         const { project, actionExecutor } = get();
-        const projectCopy = structuredClone(project);
         const reflowed = reflowMotionAutoLayoutGroups(composition);
         const action: Action = {
           type: "motion/upsertComposition",
@@ -3213,9 +3211,9 @@ export const useProjectStore = create<ProjectState>()(
           timestamp: Date.now(),
           params: { composition: { ...reflowed, modifiedAt: Date.now() } },
         };
-        const result = await actionExecutor.execute(action, projectCopy);
+        const result = await actionExecutor.execute(action, project);
         if (result.success) {
-          set({ project: { ...projectCopy, modifiedAt: Date.now() } });
+          set({ project: { ...project, modifiedAt: Date.now() } });
         }
         return result;
       },

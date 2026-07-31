@@ -117,8 +117,7 @@ describe("ActionExecutor media/import undo", () => {
   });
 });
 
-describe("ActionExecutor grouped generated IDs", () => {
-  it("undoes every rapidly-added track in one history group", async () => {
+describe("ActionExecutor grouped generated IDs", () => {  it("undoes every rapidly-added track in one history group", async () => {
     const executor = new ActionExecutor();
     const project = makeProject();
     executor.getHistory().beginGroup("Add overlay tracks");
@@ -146,6 +145,85 @@ describe("ActionExecutor grouped generated IDs", () => {
     const undo = await executor.undo(project);
     expect(undo.success).toBe(true);
     expect(project.timeline.tracks).toHaveLength(0);
+  });
+});
+
+describe("ActionExecutor auto-group snapshot skipping", () => {
+  it("restores the pre-group state when undoing a rapid move burst", async () => {
+    const executor = new ActionExecutor();
+    const project = makeProjectWithClip();
+    const getStart = () => project.timeline.tracks[0].clips[0].startTime;
+
+    // Rapid clip/move burst within the 100ms auto-group window.
+    // Only the first action should need an undo snapshot.
+    const moveTimes = [1, 2, 3, 4];
+    for (let i = 0; i < moveTimes.length; i++) {
+      const startTime = moveTimes[i];
+      const result = await executor.execute(
+        {
+          id: `move-${i}`,
+          type: "clip/move",
+          params: { clipId: "c1", startTime },
+          timestamp: Date.now(),
+        } as unknown as Action,
+        project,
+      );
+      expect(result.success).toBe(true);
+    }
+    expect(getStart()).toBe(4);
+
+    const history = executor.getHistory();
+    const entries = history.getHistoryEntries();
+    expect(entries).toHaveLength(4);
+    expect(entries[0].groupId).toBeDefined();
+    expect(entries[1].inverseAction).toBeNull();
+    expect(entries[2].inverseAction).toBeNull();
+    expect(entries[3].inverseAction).toBeNull();
+
+    // One undo restores the whole burst back to the original position.
+    const undo = await executor.undo(project);
+    expect(undo.success).toBe(true);
+    expect(getStart()).toBe(0);
+
+    // Redo replays the burst forward to its final position.
+    const redo = await executor.redo(project);
+    expect(redo.success).toBe(true);
+    expect(getStart()).toBe(4);
+  });
+
+  it("skips snapshots only for same-target bursts, not across targets", async () => {
+    const executor = new ActionExecutor();
+    const project = makeProjectWithClip();
+    project.timeline.tracks[0].clips.push({
+      ...project.timeline.tracks[0].clips[0],
+      id: "c2",
+    });
+
+    const move = (id: string, clipId: string, startTime: number): Action =>
+      ({
+        id,
+        type: "clip/move",
+        params: { clipId, startTime },
+        timestamp: Date.now(),
+      }) as unknown as Action;
+
+    await executor.execute(move("a1", "c1", 1), project);
+    await executor.execute(move("b1", "c2", 1), project);
+    await executor.execute(move("a2", "c1", 2), project);
+
+    const entries = executor.getHistory().getHistoryEntries();
+    // c2's move is a different target -> its own group with a snapshot,
+    // and a2 (c1) does not merge with a1 because b1 sits between them.
+    const withInverse = entries.filter((e) => e.inverseAction !== null);
+    expect(withInverse.map((e) => e.action.id)).toEqual(["a1", "b1", "a2"]);
+
+    // Each is its own undo step, applied in LIFO order.
+    await executor.undo(project);
+    expect(project.timeline.tracks[0].clips.find((c) => c.id === "c1")?.startTime).toBe(1);
+    await executor.undo(project);
+    expect(project.timeline.tracks[0].clips.find((c) => c.id === "c2")?.startTime).toBe(0);
+    await executor.undo(project);
+    expect(project.timeline.tracks[0].clips.find((c) => c.id === "c1")?.startTime).toBe(0);
   });
 });
 

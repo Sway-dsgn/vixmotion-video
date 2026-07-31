@@ -157,8 +157,30 @@ export class ActionHistory {
     this.listeners.forEach((listener) => listener());
   }
 
-  push(action: Action, inverseAction: Action | null = null): void {
-    const now = Date.now();
+  /**
+   * Mirrors the auto-grouping decision made in push(). If this returns true,
+   * the next push(action) will join the group of the last entry, so callers
+   * (e.g. ActionExecutor) can skip generating an undo snapshot for it — the
+   * first entry of the group already captures the pre-group state.
+   */
+  wouldAutoGroup(action: Action, now: number): boolean {
+    if (this.currentGroupId) return false;
+    if (this.undoStack.length === 0) return false;
+    const timeSinceLastAction = now - this.lastActionTime;
+    if (timeSinceLastAction >= this.autoGroupWindow) return false;
+    const lastEntry = this.undoStack[this.undoStack.length - 1];
+    if (lastEntry.action.type !== action.type) return false;
+    if (!AUTO_GROUPABLE_TYPES.has(action.type)) return false;
+    const lastTarget = getActionTargetId(lastEntry.action);
+    const currentTarget = getActionTargetId(action);
+    return lastTarget !== null && lastTarget === currentTarget;
+  }
+
+  push(
+    action: Action,
+    inverseAction: Action | null = null,
+    now: number = Date.now(),
+  ): void {
     const timeSinceLastAction = now - this.lastActionTime;
     this.lastActionTime = now;
 

@@ -95,11 +95,21 @@ export class ActionExecutor {
         },
       };
     }
-    const projectSnapshot = JSON.parse(JSON.stringify(project));
-    const inverseAction = this.inverseGenerator.generate(
-      action,
-      projectSnapshot,
-    );
+    const now = Date.now();
+    // A burst of rapid updates (clip drag, slider scrub, trim handle)
+    // coalesces into a single undo group; only the first action of the
+    // group needs a project snapshot, since its inverse restores the
+    // whole pre-group state. Skipping the deep clone for the rest turns
+    // a full-project clone per frame into a single clone per gesture.
+    const willAutoGroup = this.history.wouldAutoGroup(action, now);
+    let inverseAction: Action | null = null;
+    if (!willAutoGroup) {
+      const projectSnapshot = structuredClone(project);
+      inverseAction = this.inverseGenerator.generate(
+        action,
+        projectSnapshot,
+      );
+    }
     try {
       await this.applyAction(action as TimelineAction, project);
       // Resolve generated-id markers while this action's newly-created entity is
@@ -108,7 +118,7 @@ export class ActionExecutor {
       const resolvedInverseAction = inverseAction
         ? this.resolveSpecialMarkers(inverseAction)
         : null;
-      this.history.push(action, resolvedInverseAction);
+      this.history.push(action, resolvedInverseAction, now);
 
       return {
         success: true,
